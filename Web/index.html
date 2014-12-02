@@ -1,0 +1,249 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+
+	<title>Droppable Between Panes</title>
+
+	<link rel="stylesheet" type="text/css" media="screen" href="css/droppable_layout.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="css/droppable_widget.js.css" />
+	<link href="css/examples.css" rel="stylesheet" type="text/css">
+		<script src="js/vendor/jquery-1.10.2.min.js"></script>
+    <script src="js/vendor/modernizr.custom.23937.js"></script>
+	<script src="js/vendor/jquery.notify.js"></script>
+	<script src="js/vendor/jquery-ui-1.9.2/ui/jquery-ui.js"></script>
+	<link href="js/vendor/jquery-ui-1.9.2/themes/base/minified/jquery-ui.min.css" rel="stylesheet" type="text/css">
+	<link href="css/themes/jquery-ui-1.10.3.custom.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="js/vendor/jquery-latest.js"></script>
+	<script type="text/javascript" src="js/vendor/jquery-ui-latest.js"></script>
+	<script type="text/javascript" src="js/vendor/jquery.layout-latest.js"></script>
+    <script language="javascript" type="text/javascript" src="js/vendor/flot/jquery.flot.js"></script>
+    <script language="javascript" type="text/javascript" src="js/vendor/flot/jquery.flot.time.js"></script>
+    <script language="javascript" type="text/javascript" src="js/vendor/flot/jquery.flot.selection.js"></script>
+    <script language="javascript" type="text/javascript" src="js/vendor/flot/jquery.flot.symbol.js"></script>	
+    <script language="javascript" type="text/javascript" src="js/mathPack.js"></script>	
+    <script language="javascript" type="text/javascript" src="js/MathPack2.js"></script>	
+    <script language="javascript" type="text/javascript" src="js/imageTools.js"></script>	
+    <script language="javascript" type="text/javascript" src="js/pluginHandler.js"></script>	
+    <script language="javascript" type="text/javascript" src="js/HashTable.js"></script>
+    <script language="javascript" type="text/javascript" src="js/SensoryManager.js"></script>
+    <script language="javascript" type="text/javascript" src="http://localhost:8444/socket.io/socket.io.js"></script>
+    <script language="javascript" type="text/javascript" src="js/nodeconnection.js"></script>	
+    <script language="javascript" type="text/javascript" src="js/userHistory.js"></script>	
+    <script src="js/vendor/modernizr.custom.23937.js"></script>
+    <script language="javascript" type="text/javascript" src="js/vendor/jquery-dialogextend-master/build/jquery.dialogextend.js"></script>
+	<script>
+	
+	var outerLayout;
+	
+	//	Extends dialog object to control props
+	var extendDialog = function(dialog) {
+        dialog.dialogExtend({
+            "maximizable" : true,
+            "minimizable" : true,
+            "collapsable" : true,
+            "closable" : true,
+            "dblclick" : "maximize"
+        });
+        return dialog;
+    };
+    
+    //	To show a dialog
+    var showDialog = function(theDialog, methodName){
+        var method = methodName || 'open';
+        extendDialog($( "#dialog" ).dialog({
+            		closeOnEscape:false,
+            		title: "IMAGE DIALOG",
+            		position: {
+               			my: "left top",
+               			at: "left top",
+               			of: $("#centerContent")//.parent(".ui-dialog")
+           			},
+           			width:"auto",
+           			height:"auto"
+        		}));
+        theDialog.dialog(method);        
+    };
+    
+    
+	/*
+	*#######################
+	*		 ON PAGE LOAD
+	*#######################
+	*/
+	$(document).ready( function() {
+	
+	/*	This is the data that gets plotted by default...  */	
+		var d1 = [];
+		for (var i = 0; i < 14; i += 0.5) 
+		{
+			d1.push([i, Math.sin(i)]);
+		}
+		var d2 = [[0, 3], [4, 8], [8, 5], [9, 13]];
+		var d3 = [[0, 12], [7, 12], null, [7, 2.5], [12, 2.5]];		// A null signifies separate line segments
+		
+		outerLayout = $("body").layout();
+		var tools = new imageTools();
+		var plugins = new pluginHandler();			
+		var math = new mathPack();
+		
+		plugins.makeVariableEditor();
+		plugins.makeOutputTerminal();
+		plugins.makeInputWindow();
+		plugins.makePasswordEntry();
+		
+		// Make all of our draggable items
+		
+		plugins.createDraggableItems([
+      "#dragPlot", "#dragImage", "#dragConsole",
+      "#dragOutput", "#dragVarExpl", "#dragScripting", 
+      "#dragVideo", "#dragInvert", "#dragGrayscale",
+      "#dragBinary", "#plotHistogram", "#dragKeystroke" 
+      /* TBD */
+		]);
+		
+		// Make all of our droppable items
+		
+		plugins.createDroppable("#dropManipulate", "#dragInvert, #dragGrayscale, #dragBinary, #plotHistogram", function(event, ui) {
+			if ($(ui.draggable).attr('id') === "dragInvert") {
+  				tools.invert('imagery');
+			}
+			if ($(ui.draggable).attr('id') === "dragGrayscale") {
+  				tools.gray('imagery');
+			}
+			if ($(ui.draggable).attr('id') === "dragBinary") {
+  				tools.binary('imagery',127); //u can change the threshold 127
+			}
+			if ($(ui.draggable).attr('id') === "plotHistogram") {    
+				var txt = "<div id=\"content\"><div class=\"demo-container\"><div id=\"placeholder\" class=\"demo-placeholder\"></div></div></div>";	
+				$("#centerContent").html(txt);
+				var d1 = tools.hist('imagery', 'vertical');
+				var d2 = tools.hist('imagery', 'horizontal');
+  			$.plot("#placeholder", [ d1, d2 ] ); //will plot both horizontal and vertical histogram
+			}
+		});
+
+		plugins.createDroppable("#dropCenter", "#dragPlot", function () {  
+		  $("#centerContent").html("<div id=\"content\"><div class=\"demo-container\"><div id=\"placeholder\" class=\"demo-placeholder\"></div></div></div>");
+			$.plot("#placeholder", [ d1 ]);
+		});
+
+		/*Action (drop) done when you drag console icon from north pane into west pane gray area*/		
+		
+		plugins.createDroppable("#dropWest", "#dragConsole", function() {
+		  plugins.setContent("#westContent", "#console");
+		});
+
+		/*Action (drop) done when you drag variable explorer icon from north pane into east pane gray area*/		
+		
+		plugins.createDroppable("#dropEast", "#dragVarExpl, #dragKeystroke", function (event, ui) {				
+  		if ($(ui.draggable).attr('id') === "dragVarExpl") 
+  		{
+  				plugins.setContent("#eastContent", "#vars");
+			}
+			if ($(ui.draggable).attr('id') === "dragKeystroke") 
+			{
+  				plugins.setContent("#eastContent", "#pass");
+			}		  
+		});
+		
+		/*Action (drop) done when you drag output icon from north pane into south pane gray area*/
+		
+		plugins.createDroppable("#dropSouth", "#dragOutput", function () {		
+		  plugins.setContent("#southContent", "#out");							
+		});
+
+		/*Action (drop) done when you drag image icon from north pane into north pane last button on the right*/
+		
+		plugins.createDroppable("#dropDialog", "#dragImage", function () {        
+		  tools.loadCanvas('imagery');  	
+    	tools.setImage(document.getElementById('imagery'), "images/scream.jpg");    			
+    	plugins.appendToHandle(
+    		"#dialog", 
+    		["#dragBinary", "#dragInvert", "#dragGrayscale", "#plotHistogram", "#imagery"]
+    	);		
+    	showDialog($("#dialog"), 'open');
+		});			
+		
+		// This will set the content areas to the output and console resp. and show them in page
+		plugins.setContent("#southContent", "#out");
+		plugins.setContent("#westContent", "#console");
+		
+		// This will hide an array of handles
+    var theHideList = ["#imagery", "#vars", "#dragBinary", "#dragInvert", "#dragGrayscale", "#plotHistogram", "#pass"];
+		plugins.hideList(theHideList);  	  
+		
+		var sock = new nodeConnection();		
+		sock.init(plugins);
+		
+		//set Toggle = true to log keyboard and mouse metrics to developer console, false to turn logging off
+		var Toggle = true;
+		var monitorMe = "#pass"; // this is the object to be monitored
+		var sensors = new SensoryManager(sock, plugins);	
+		var userHist = new userHistory();
+		userHist.init(sock, math);
+		
+		if(Toggle){			
+		  sensors.init(monitorMe);
+    }	else {  }
+		
+		// finito por ahora
+	});
+
+	</script>
+</head>
+<body>
+<canvas id="imagery" width="512" height="512"></canvas>
+<div class="ui-layout-center">
+	<ul id="column1" class="column">
+		<div id="dropCenter" style="margin: 0 1em; padding: 1.5em; text-align: center; border: 2px solid #666; background: #666;">
+			Drop Plot icon from north pane into here to replace center pane content
+		</div>
+		<div id="centerContent"></div>		
+</div>
+<div class="ui-layout-east">
+		<div id="dropEast" style="margin: 0 1em; padding: 1.5em; text-align: center; border: 2px solid #666; background: #666;">
+			Drop Variable Explorer icon from north pane into here to replace east pane content
+		</div>
+			<div id="eastContent"></div>
+</div>
+<div class="ui-layout-west">
+	<div id="dropWest" style="margin: 0 1em; padding: 1.5em; text-align: center; border: 2px solid #666; background: #666;">
+		Drop Console icon from north pane into here to replace west pane content
+	</div>
+	<div id="westContent"></div>
+	<button id="submitConsole" name="submitConsole" type="button" >Submit</button>
+</div>
+<div class="ui-layout-north">
+	THIS IS WHERE THE ICONS WILL GO
+	<div id="dragPlot" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Plot</div>
+	<div id="dragImage" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Image</div>
+	<div id="dragConsole" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Console</div>
+	<div id="dragVarExpl" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Var Expl.</div>
+	<div id="dragScripting" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Scripting</div>
+	<div id="dragKeystroke" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Keystroke collecter</div>
+	<div id="dragVideo" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Video</div>
+	<div id="dragOutput" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Output</div>
+	<div id="dropDialog" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Drop Image here</div>
+	<div id="dropManipulate" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Drop ops</div>
+	<div id="dropCollector" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Drop Collecter</div>
+</div>
+<div class="ui-layout-south">
+	<div id="dropSouth" style="margin: 0 1em; padding: 1.5em; text-align: center; border: 2px solid #666; background: #666;">	
+		Drop Output icon from north pane into here to replace south pane content
+	</div>
+	<div id="southContent"></div>
+</div>
+<div id="dragInvert" style="width: 7ex; border: 2px solid #CCC; background: #009; padding: 10px;">Invert</div>
+<div id="dragGrayscale" style="width: 7ex; border: 2px solid #CCC; background: #009; padding: 10px;">Grayscale</div>
+<div id="dragBinary" style="width: 7ex; border: 2px solid #CCC; background: #009; padding: 10px;">Binary</div>
+<div id="plotHistogram" style="width: 7ex; border: 2px solid #CCC; background: #009; padding: 10px;">Histogram</div>
+<div id="dialog"></div>
+<div id="console"></div>
+<div id="pass"></div>
+<div id="vars"></div>
+<div id="out"></div>
+<div id="clickMe"></div>
+</body>
+</html>

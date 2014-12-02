@@ -1,0 +1,9 @@
+{
+"name": "MindYieldAnalytics",
+"version": "0.0.1",
+"description": "Socket connection to other libraries",
+"dependencies": {
+"socket.io": "~0.9.6",
+"mime": "~1.2.7"
+}
+}
