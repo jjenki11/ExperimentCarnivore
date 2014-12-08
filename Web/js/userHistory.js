@@ -58,9 +58,11 @@ var userHistory = function()
   {
     if(history.length > 1)
     {
+      if(data.length < history[history.length-1]){}
+      else{
       console.log(math.subtractVector(data, history[history.length-1]));
       diffs.push(math.subtractVector(data, history[history.length-1]));
-      
+      }
     }    
     if(history.length >=2){
       testColumns(history);

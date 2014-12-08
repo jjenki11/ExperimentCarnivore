@@ -76,7 +76,7 @@ var SensoryManager = function(sock, plug)
     // move mouse
     $( handle ).mousemove(function( event ) {
         var evtObj = new initEventObject('mouse','move',{x: event.pageX, y: event.pageY}, Date.now());
-        console.log(evtObj.toString());
+        console.log(evtObj);
         emitter.send('sensor', evtObj);
         lastEvent = evtObj;
     });
