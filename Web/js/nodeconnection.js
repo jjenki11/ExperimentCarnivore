@@ -5,10 +5,22 @@ var nodeConnection = function()
   var socket = new io.connect('http://localhost:8444');
   var plugins = null;
   
-  function send(msgType, data)
+  function send(msgType, data, callback)
   {
-    socket.emit(msgType, data);
+    socket.emit(msgType, data, callback);
   };
+  
+   function splitRows(data)
+    {
+      dataChunk = "";
+      dataChunk = data.split("\n");
+      return dataChunk;
+    
+    };
+
+  
+  
+  
   
   function attachHandler(msgType, handler)
   {
@@ -23,6 +35,11 @@ var nodeConnection = function()
 	socket.on('success', function(data){
 		alert(data);
 	});
+	
+	socket.on('test_driver', function(data){
+	  //console.log('suppington: ',data);
+	  console.log('suppington', data.length);
+	});
 
 	/*socket.on('response', function (stream) {
 		var buffer = '';
@@ -31,7 +48,7 @@ var nodeConnection = function()
 		    });
 		stream.on('end', function () { 
 			console.log(buffer);
-			$('textarea[id="out"]').append(buffer);
+			$('Textarea[id="out"]').append(buffer);
 		    });
 		    });*/
 	
@@ -45,12 +62,14 @@ var nodeConnection = function()
 		}
 	});
 	
+
+	
+	
 	socket.emit("init", {message:"start"});
 
 	$('#submitConsole').on("click", function(){	
 		var console = $('textarea[id="console"]').val();		
 		var res = validateInput(console);
-	  //socket.emit('request', {message: "a = 5;\nb = 10;\nz =  a + b;\ndisp(z)"});
 		socket.emit('request', {message: res});
 	});
 	
@@ -59,6 +78,9 @@ var nodeConnection = function()
 	});
 	
 	//TBD generalize this approach later - this is for basic functionality for the case of a 2d plot
+ /* socket.on('econ_init', function(data){
+	  console.log("YOUR IN NODE CONNECTION");
+	});*/
 	socket.on('plot_data', function(data) {	  
     plugins.updatePlotWindow(data);
 	});

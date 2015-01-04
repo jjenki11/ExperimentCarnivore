@@ -11,7 +11,7 @@
 
 int main(int argv, char** argc){
 
-    int host_port= 8080;
+    int host_port= 30008;
     char* host_name="127.0.0.1";
   struct sockaddr_in my_addr;
 

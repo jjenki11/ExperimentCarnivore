@@ -28,6 +28,18 @@
     <script language="javascript" type="text/javascript" src="js/pluginHandler.js"></script>	
     <script language="javascript" type="text/javascript" src="js/HashTable.js"></script>
     <script language="javascript" type="text/javascript" src="js/SensoryManager.js"></script>
+
+    <script language="javascript" type="text/javascript" src="js/economics/Driver.js"></script>
+    <script language="javascript" type="text/javascript" src="js/economics/tools/EconUtils.js"></script>
+
+    <script language="javascript" type="text/javascript" src="js/economics/structures/Firm.js"></script>
+    <script language="javascript" type="text/javascript" src="js/economics/structures/Bankrupcy.js"></script>
+    <script language="javascript" type="text/javascript" src="js/economics/structures/boundedValue.js"></script>
+    <script language="javascript" type="text/javascript" src="js/economics/structures/Economy.js"></script>
+    <script language="javascript" type="text/javascript" src="js/economics/tools/HashMap.js"></script>
+    <script language="javascript" type="text/javascript" src="js/economics/tools/Mapping.js"></script>
+    <script language="javascript" type="text/javascript" src="js/economics/tools/ReadFile.js"></script>
+    
     <script language="javascript" type="text/javascript" src="http://localhost:8444/socket.io/socket.io.js"></script>
     <script language="javascript" type="text/javascript" src="js/nodeconnection.js"></script>	
     <script language="javascript" type="text/javascript" src="js/userHistory.js"></script>	
@@ -88,6 +100,8 @@
 		var plugins = new pluginHandler();			
 		var math = new mathPack();
 		
+		//plugins.createConnection();
+		
 		plugins.makeVariableEditor();
 		plugins.makeOutputTerminal();
 		plugins.makeInputWindow();
@@ -99,7 +113,8 @@
       "#dragPlot", "#dragImage", "#dragConsole",
       "#dragOutput", "#dragVarExpl", "#dragScripting", 
       "#dragVideo", "#dragInvert", "#dragGrayscale",
-      "#dragBinary", "#plotHistogram", "#dragKeystroke" 
+      "#dragBinary", "#plotHistogram", "#dragKeystroke",
+      "#dragEmotiv", "#dragEcon",
       /* TBD */
 		]);
 		
@@ -124,10 +139,24 @@
 			}
 		});
 
-		plugins.createDroppable("#dropCenter", "#dragPlot", function () {  
-		  $("#centerContent").html("<div id=\"content\"><div class=\"demo-container\"><div id=\"placeholder\" class=\"demo-placeholder\"></div></div></div>");
-			$.plot("#placeholder", [ d1 ]);
+		plugins.createDroppable("#dropCenter", "#dragPlot, #dragEmotiv, #dragEcon", function (event, ui) {  
+		  if ($(ui.draggable).attr('id') === "dragPlot") 
+  		{
+  			$("#centerContent").html("<div id=\"content\"><div class=\"demo-container\"><div id=\"placeholder\" class=\"demo-placeholder\"></div></div></div>");
+			  $.plot("#placeholder", [ d1 ]);
+			}
+			if ($(ui.draggable).attr('id') === "dragEmotiv") 
+			{
+			   startEmotiv();
+  				console.log("emotiv connected, starting data");
+			}		 		
+			if ($(ui.draggable).attr('id') === "dragEcon")
+			{
+			  startEcon();
+			  console.log("Econ routine started. TBD Change handling");
+			}
 		});
+
 
 		/*Action (drop) done when you drag console icon from north pane into west pane gray area*/		
 		
@@ -177,6 +206,15 @@
 		var sock = new nodeConnection();		
 		sock.init(plugins);
 		
+		function startEmotiv(){
+		  setInterval(function(){		  
+		    sock.send('emotiv_sup', {a1: 'counter', a2: 'GYROX', a3: 'O1'});
+		  }, 200);
+		};
+		
+		
+		
+		
 		//set Toggle = true to log keyboard and mouse metrics to developer console, false to turn logging off
 		var Toggle = true;
 		var monitorMe = "#pass"; // this is the object to be monitored
@@ -187,6 +225,16 @@
 		if(Toggle){			
 		  sensors.init(monitorMe);
     }	else {  }
+    
+    
+  
+    function startEcon(){
+      sock.send('econ_init', {});
+    //  var drive = new Driver();
+		//  drive.init(sock);
+		  console.log("ECON DRIVER STARTED");
+		};
+		
 		
 		// finito por ahora
 	});
@@ -225,6 +273,8 @@
 	<div id="dragKeystroke" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Keystroke collecter</div>
 	<div id="dragVideo" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Video</div>
 	<div id="dragOutput" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Output</div>
+	<div id="dragEmotiv" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Connect Emotiv</div>
+		<div id="dragEcon" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Process Econ</div>
 	<div id="dropDialog" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Drop Image here</div>
 	<div id="dropManipulate" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Drop ops</div>
 	<div id="dropCollector" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Drop Collecter</div>
