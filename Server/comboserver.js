@@ -51,6 +51,113 @@
       }
     });
   };
+ 
+  // move these outta here!
+  
+  var RandomVector = function(rows)
+  {
+    var v = [];
+    for(var i = 0; i < rows; i++)
+    {
+      v.push(Math.random());
+    }
+    return v;
+  };
+  
+  var ArrayToCommaDelimString = function(arr)
+  {
+    var str = "";
+    
+    for(var i =0; i < arr.length; i++)
+    {
+      if(i == arr.length) {
+        str += arr[i];
+      }
+      else {
+        str += arr[i] + ",";
+      }
+    }
+    
+    return str;
+  };
+  
+  var addData = function(sharedData)
+  {  
+    EEGStruct["counter"].push(sharedData[0]); 
+    EEGStruct["AF3"].push(sharedData[1]);
+    EEGStruct["F7"].push(sharedData[2]);
+    EEGStruct["F3"].push(sharedData[3]);
+    EEGStruct["FC5"].push(sharedData[4]);
+    EEGStruct["T7"].push(sharedData[5]);
+    EEGStruct["P7"].push(sharedData[6]);
+    EEGStruct["O1"].push(sharedData[7]);
+    EEGStruct["O2"].push(sharedData[8]);
+    EEGStruct["P8"].push(sharedData[9]);
+    EEGStruct["T8"].push(sharedData[10]);
+    EEGStruct["FC6"].push(sharedData[11]);
+    EEGStruct["F4"].push(sharedData[12]);
+    EEGStruct["F8"].push(sharedData[13]);
+    EEGStruct["AF4"].push(sharedData[14]);
+    EEGStruct["GYROX"].push(sharedData[15]);
+    EEGStruct["GYROY"].push(sharedData[16]);
+    EEGStruct["Timestamp"].push(sharedData[17]);   
+    
+  };
+  
+  var newDataEvent = function(data)
+  {   
+    var sharedData = [];
+    sharedData = data.toString().split(",");
+    sharedData[0] = idx++;             
+      
+    return sharedData;
+  };
+  
+  var gateObjectSize = function(t)
+  {
+    if( (Date.now() - lastSample ) > t )
+    {        
+      EEGHistory.push(EEGStruct);
+      clearStruct();        
+      lastSample = Date.now();
+    }
+  };
+  
+  var MockSignal = function(s)
+  {
+  
+
+    
+    var x = setInterval(function(){
+    
+      var rand = RandomVector(18);
+      
+      var str = ArrayToCommaDelimString(rand);
+      
+      var chop = str.toString().replace(/,_/, '\r\n');    
+      WriteLine('/home/jeff/Desktop/mockDataFile.txt', chop);
+      
+      var splitData = newDataEvent(str);      
+      addData(splitData);       
+      gateObjectSize(20000);
+      
+      
+      var data = EEGStruct;
+      
+      var d1 = data["counter"];
+      var d2 = data["GYROY"];
+      var d3 = data["O1"];
+      
+      var pairs = [];
+      var pairs2 = [];
+      
+      for(var idx in d1){ pairs.push([d1[idx], d2[idx]]); }          
+      for(var idx in d1){ pairs2.push([d1[idx], d3[idx]]); }
+      
+      s.emit('plot_data', pairs);
+      
+    }, 200);  
+  }
   
   ﻿var io = require('socket.io').listen(8444, '127.0.0.1');
   var ss = require('socket.io-stream');
@@ -140,7 +247,7 @@
           for(var idx in d1){ pairs.push([d1[idx], d2[idx]]); }          
           for(var idx in d1){ pairs2.push([d1[idx], d3[idx]]); }
           
-          socket.emit('plot_data', pairs2);
+          socket.emit('plot_data', pairs);
         }
     });
     
@@ -152,62 +259,15 @@
       socket.emit('plot_data', pairs);
     });
     
-    socket.on('file_init', function(data, callback) {
-      
-      //if(x != null){ socket.emit('file_data', x); }
-      var x = ReadFile(data.fName);
-      console.log(x);
-      socket.emit('file_data', callback(x));
-
-/*
-      callback(function(){
-        
-        socket.emit('file_data', x)
-        //return x;
-      });
-*/
-    });
-    
-    socket.on('bk_init', function(data, callback) {
-      var x = ReadFile(data.fName);
-//      socket.emit('bk_data', callback(x));
-      callback(x);
+    socket.on('mock_EEG_stream', function(data) {     
+      MockSignal(socket);                
     });
     
     socket.on('econ_init', function(data, callback) {
      
         var d = require('./economics/Driver').Driver();
-        d.init(socket);
+        d.init();
         console.log('success with econ init: ',d);
-        
- 
-        //var x = ReadFile(data.fName);
-        //console.log(x);
-
-/*      
-      function(){
-         
-         socket.emit('econ_data', x);
-         //return x;
-      });
-*/
-      //if(x != null){ socket.emit('econ_data', x); }   
-    });
-    
-    socket.on('mapping_init', function(data, callback) {
-     // var x = ReadFile(data.fName);
-        var x = ReadFile(data.fName);
-        callback(x);
-
-/*
-        callback(function(){
-          
-          socket.emit('mapping_data', x);
-         // return x;
-        });
-*/
-         
-      //if(x != null){ socket.emit('mapping_data', x); }
     });
     
     socket.on('image', function(data) {
@@ -219,6 +279,7 @@
     });
     
   /*  keep one of the following (inter_key v. intra_key) commented to avoid overwriting */
+  
     socket.on('passwordEntered', function(data){      
       socket.emit('inter_key_times', keyEventHistory);           
       //socket.emit('intra_key_times', keyEventHistory);    
@@ -238,6 +299,9 @@
         case 'mouse': 
           updateMouseHistory(data);
           //socket.emit('show_event', JSON.stringify(mouseEventHistory)); // show mouse log history
+          break;
+        case 'mocked':
+          updateMockHistory(data);
           break;
       }
     });
@@ -300,50 +364,31 @@
   var PORT = 30009;
   var idx = 0;
   var lastSample = Date.now();
+  
+  
+
 
   var EmotivServer = net.createServer(function(sock) 
   {
       var threshTime = 20000;
-      var sharedData = [];
-      
-      sock.on('data', function(data) {
-      
-        sharedData = data.toString().split(",");
-        sharedData[0] = idx++;
-        EEGStruct["counter"].push(sharedData[0]); 
-        EEGStruct["AF3"].push(sharedData[1]);
-        EEGStruct["F7"].push(sharedData[2]);
-        EEGStruct["F3"].push(sharedData[3]);
-        EEGStruct["FC5"].push(sharedData[4]);
-        EEGStruct["T7"].push(sharedData[5]);
-        EEGStruct["P7"].push(sharedData[6]);
-        EEGStruct["O1"].push(sharedData[7]);
-        EEGStruct["O2"].push(sharedData[8]);
-        EEGStruct["P8"].push(sharedData[9]);
-        EEGStruct["T8"].push(sharedData[10]);
-        EEGStruct["FC6"].push(sharedData[11]);
-        EEGStruct["F4"].push(sharedData[12]);
-        EEGStruct["F8"].push(sharedData[13]);
-        EEGStruct["AF4"].push(sharedData[14]);
-        EEGStruct["GYROX"].push(sharedData[15]);
-        EEGStruct["GYROY"].push(sharedData[16]);
-        EEGStruct["Timestamp"].push(sharedData[17]);       
-              
-        sock.write('"'+EEGStruct+'"');        
-      var chop = sharedData.toString().replace(/,_/, '\r\n');
-    WriteLine('/home/jeff/Desktop/dataFile.txt', chop);     
-      
-        if( (Date.now() - lastSample ) > threshTime )
-        {        
-          EEGHistory.push(EEGStruct);
-          clearStruct();        
-          lastSample = Date.now();
-        }
+      sock.on('data', function(data) {      
+        var splitData = newDataEvent(data);      
+        addData(splitData);        
+        sock.write('"'+EEGStruct+'"');          
+        var chop = splitData.toString().replace(/,_/, '\r\n');        
+        WriteLine('/home/jeff/Desktop/dataFile.txt', chop);    
+        gateObjectSize(threshTime);
       });
       
       sock.on('error', function() {
-        if(verbose)
+        if(verbose){
           console.log("Error is properly handled");
+        }
+        else{
+        
+          
+          
+        }
       });
       
       sock.on('close', function(data) {
