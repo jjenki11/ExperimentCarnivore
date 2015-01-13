@@ -126,15 +126,15 @@
 		});
 
 		plugins.createDroppable("#dropCenter", "#dragPlot, #dragKeypad", function (event, ui) {  
-		if ($(ui.draggable).attr('id') === "dragPlot") 
-  	{					
-			plugins.setContent("#centerContent", "#imagery");
-		}
-		if ($(ui.draggable).attr('id') === "dragKeypad") 
-		{
-		    console.log("success"); 	
-  			//plugins.setContent("#centerContent", "#numpad");
-		}		  
+		  if ($(ui.draggable).attr('id') === "dragPlot") 
+    	{					
+			  plugins.setContent("#centerContent", "#imagery");
+		  }
+		  if ($(ui.draggable).attr('id') === "dragKeypad") 
+		  {
+		      console.log("success"); 	
+    			//plugins.setContent("#centerContent", "#numpad");
+		  }		  
 		});
 
 		/*Action (drop) done when you drag console icon from north pane into west pane gray area*/		

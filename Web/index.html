@@ -28,17 +28,6 @@
     <script language="javascript" type="text/javascript" src="js/pluginHandler.js"></script>	
     <script language="javascript" type="text/javascript" src="js/HashTable.js"></script>
     <script language="javascript" type="text/javascript" src="js/SensoryManager.js"></script>
-
-    <script language="javascript" type="text/javascript" src="js/economics/Driver.js"></script>
-    <script language="javascript" type="text/javascript" src="js/economics/tools/EconUtils.js"></script>
-
-    <script language="javascript" type="text/javascript" src="js/economics/structures/Firm.js"></script>
-    <script language="javascript" type="text/javascript" src="js/economics/structures/Bankrupcy.js"></script>
-    <script language="javascript" type="text/javascript" src="js/economics/structures/boundedValue.js"></script>
-    <script language="javascript" type="text/javascript" src="js/economics/structures/Economy.js"></script>
-    <script language="javascript" type="text/javascript" src="js/economics/tools/HashMap.js"></script>
-    <script language="javascript" type="text/javascript" src="js/economics/tools/Mapping.js"></script>
-    <script language="javascript" type="text/javascript" src="js/economics/tools/ReadFile.js"></script>
     
     <script language="javascript" type="text/javascript" src="http://localhost:8444/socket.io/socket.io.js"></script>
     <script language="javascript" type="text/javascript" src="js/nodeconnection.js"></script>	
@@ -114,7 +103,7 @@
       "#dragOutput", "#dragVarExpl", "#dragScripting", 
       "#dragVideo", "#dragInvert", "#dragGrayscale",
       "#dragBinary", "#plotHistogram", "#dragKeystroke",
-      "#dragEmotiv", "#dragEcon",
+      "#dragEmotiv", "#dragEcon", "#dragMock",
       /* TBD */
 		]);
 		
@@ -139,7 +128,7 @@
 			}
 		});
 
-		plugins.createDroppable("#dropCenter", "#dragPlot, #dragEmotiv, #dragEcon", function (event, ui) {  
+		plugins.createDroppable("#dropCenter", "#dragPlot, #dragEmotiv, #dragEcon, #dragMock", function (event, ui) {  
 		  if ($(ui.draggable).attr('id') === "dragPlot") 
   		{
   			$("#centerContent").html("<div id=\"content\"><div class=\"demo-container\"><div id=\"placeholder\" class=\"demo-placeholder\"></div></div></div>");
@@ -154,6 +143,11 @@
 			{
 			  startEcon();
 			  console.log("Econ routine started. TBD Change handling");
+			}
+			if ($(ui.draggable).attr('id') === "dragMock")
+			{
+			  startMock();
+			  console.log("Mocked data started... TBD change this");
 			}
 		});
 
@@ -235,6 +229,13 @@
 		  console.log("ECON DRIVER STARTED");
 		};
 		
+		function startMock(){
+		
+		  sock.send('mock_EEG_stream', {});
+		  
+		  console.log("MOCKED STREAM STARTED");
+		};
+		
 		
 		// finito por ahora
 	});
@@ -274,6 +275,7 @@
 	<div id="dragVideo" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Video</div>
 	<div id="dragOutput" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Output</div>
 	<div id="dragEmotiv" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Connect Emotiv</div>
+		<div id="dragMock" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Connect Mock</div>
 		<div id="dragEcon" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Process Econ</div>
 	<div id="dropDialog" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Drop Image here</div>
 	<div id="dropManipulate" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Drop ops</div>
