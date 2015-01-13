@@ -8,9 +8,10 @@ exports.EconUtils = function(path)
 
     var m2;
     var filePath = path;
-    var dM2;
-    var qM2;
-    var qtrmap;
+    
+    var dmap = null;
+    var qmap = null;
+    
     var utilEcon;
    
     
@@ -19,45 +20,195 @@ exports.EconUtils = function(path)
 
     
     var splitRows = function(data)
-    {
-      return data.split('\n');    
+    {      
+      return data.toString().split('\n');    
     };
     
+    var readFile = function(filename)
+    {
+      console.log('file to be read in econ utils: ',filename);
+      var str = "";      
+      function readLines(input, func) {
+      
+        var lines = input.toString().split('\n');
+        for(var index in lines) {
+          func(lines[index]);
+        }
+        return str;
+      }
+      function func(data) {
+        str+=data+'\r\n';
+      }
+
+     var fsync = fs.readFileSync(filename);
+     if(fsync){
+      return readLines(fsync, func);    
+     }  
+    }
    
+    var init = function(){
+      m2 = require('../tools/Mapping').Mapping();
+      dmap = m2.dateMap(path);
+      qmap = m2.quartermap(path);
+     // dmap = m2.dateMap(path);
+     // qmap = m2.quartermap(path);
+     return this;
+    };
+    
+    var getMapping = function(){
+      return m2;
+    };
+    
+    var getDateMap = function(){
+      return dmap;
+    };
+    
+    var getQuarterMap = function(){
+      return qmap;
+    };
+    
+    var readCRSP = function(E,filename)
+    {
+      
+	    console.log("Reading CRSP....");
+	    console.log(filename);
+	      var x = readFile(filename);
+
+	      console.log('Held up in econutils readCRSP 1');
+
+	        var fList;//ArrayList<Firm>
+	        var values;//String[]
+	        var sics = [];//new ArrayList<String>();
+	        var qtrs = [];//new ArrayList<Integer>();
+	    
+			    var array = splitRows(x);
+			console.log('Held up in econutils readCRSP 2');
+			    for(i in array) 
+			    {
+				    values=[];
+				    //console.log('Held up in econutils readCRSP 3 iteration',i);
+				    values = array[i].split(',');
+				    
+				    firm =require('../structures/Firm').Firm();					
+				    firm.gvkey=values[0];
+				    firm.datadate=values[1];
+				    firm.fyearq=values[2];
+				    firm.fqtr=values[3];
+				    firm.cusip=''+values[4];
+				    if(firm.cusip.toString().length < 9){
+				      firm.cusip+='0';
+				    }				    
+				    firm.cusip+='';
+				    firm.cshpry=values[5];
+				    firm.txditcq=values[6];
+				    firm.sic=values[7];
+				    firm.deflator=values[8];
+				    firm.atq=values[9];
+				    firm.dlcq=values[10];
+				    firm.dlttq=values[11];
+				    firm.dpactq=values[12];
+				    firm.dpq=values[13];
+				    firm.oibdpq=values[14];
+				    firm.ppegtq=values[15];
+				    firm.prccq=values[16];
+				    firm.pstkq=values[17];
+				    firm.saleq=values[18];
+				    firm.Profitability=values[19];
+				    firm.Market_value_equity=values[20];
+				    firm.Equity_book_value=values[21];
+				    firm.Tobins_Q=values[22];	
+				    
+				    firm.dateIndex = dmap.get(''+firm.datadate+'');
+				    //dM2.get(firm.datadate);
+				    firm.quarterIndex = qmap.get(firm.dateIndex);
+				    //qM2.get(firm.datadate);
+				    //console.log(qmap.keys());
+				    //console.log('dateIndex = ',firm.dateIndex,'quarterIndex = ',firm.quarterIndex,'datadate = ',firm.datadate);
+
+	  				//build firm tree
+	  				
+    				if(E.firmTree.get(firm.cusip)==null)
+    				{
+    					fList = [];//new ArrayList<Firm>();
+    					//console.log('line 129');
+    					fList.push(firm);
+    					E.firmTree.put(firm.cusip, fList);
+    				} 
+    				else
+    				{
+    					var tt = E.firmTree.get(firm.cusip);
+    					//console.log('line 136');
+    					tt.push(firm);
+    					E.firmTree.put(firm.cusip, tt);    					
+    				}
+            //console.log(E.firmTree.values());
+						// build quarter tree
+						if(E.quarterTree.get(firm.quarterIndex) == null)
+						{
+							fList = [];//new ArrayList<Firm>();
+							//console.log('line 145');
+							fList.push(firm);
+			    		E.quarterTree.put(firm.quarterIndex, fList);
+			    		qtrs.push(firm.quarterIndex);
+			    	} 
+			    	else 
+			    	{
+							var tt = E.quarterTree.get(firm.quarterIndex);
+							//console.log('line 153');
+							tt.push(firm);
+							E.quarterTree.put(firm.quarterIndex, tt);
+						}	        	
+						// build sic tree
+						if(E.sicTree.get(firm.sic)==null)
+						{
+			    		fList = [];//new ArrayList<Firm>();
+			    		fList.push(firm);
+			    		E.sicTree.put(firm.sic, fList);
+			    		sics.push(firm.sic);
+			    	} 
+			    	else 
+			    	{
+			    		var tt = E.sicTree.get(firm.sic);
+			    		//console.log('line 168');
+			    		tt.push(firm);
+			    		E.sicTree.put(firm.sic, tt);
+			    	}
+
+			    	E.AllFirms.push(firm);	        	
+			    	if(E.AllFirms2.get(firm.cusip) != null)
+			    	{
+			    		var tt = E.AllFirms2.get(firm.cusip);
+			    		//console.log('line 177', 'tt = ',tt);
+			    		tt.push(firm);
+			    		E.AllFirms2.put(firm.cusip, tt);
+			    	}
+			    	else
+				    {
+				      fList = [];
+				      //console.log('line 184');
+				      fList.push(firm);
+			    		E.AllFirms2.put(firm.cusip, fList);	    
+			    	}	
+			    	writeList('testrajdioapd.txt', JSON.stringify(E.AllFirms2.get(firm.cusip)));			    	
+			    }			    
+			    			
+	  return E;
+  };
+    
+    var writeList =     function(filename, text)
+					     					{
+					     						fs.appendFile(filename, text+"\r\n", function (err) {});						 
+										    }
 
    return {
    
-    init: function(socket){
-      m2 = require('../tools/Mapping').Mapping(socket);
-      dM2 = m2.dateMap(path);
-      qM2 = m2.quartermap(path);
-      qtrmap = m2.quartermap(path);
-      /*
-      sock.attachHandler('econ_data', function(data, callback){
-        var x = splitRows(data);
-        callback(function(){return x;});
-      });
-      sock.attachHandler('file_data', function(data, callback){
-        
-        callback(function(){var x = splitRows(data);return x;});
-      });
-      sock.attachHandler('mapping_data', function(data, callback){
-        
-        callback(function(){var x = splitRows(data);return x;});
-      });
-      sock.attachHandler('bk_data', function(data, callback){
-        
-        callback(function(){var x = splitRows(data);return x;});
-      });
-      s = sock;
-        */
-    },
+    init: init,
 
     
-    m2:  function(){return m2;},
-    dM2: function(path){return m2.dateMap(path);},
-    qM2:  function(path){return m2.quartermap(path)},
-    qtrmap: function(path){return m2.quartermap(path)},
+    getMapping:  getMapping,
+    getDateMap: getDateMap,
+    getQuarterMap:  getQuarterMap,
+    qM2: getQuarterMap,
     utilEcon: utilEcon,
     getFilePath: 				function()
 										    {
@@ -102,186 +253,21 @@ exports.EconUtils = function(path)
 											    txt = "@data\r\n";
 											    writeList(filename, txt);
 										    },	
-    readList: 					function(filename,socc)
+    readList: 					function(filename)
 										    {									
 										      console.log("Reading list....");
 	                        console.log(filename);
 	                        var data = fs.readFileSync(filename);
 										        var array = splitRows(data);
 											        for(i in array) {
-											            console.log(array[i]);
+											           // console.log(array[i]);
 											        }	
 											        return array;
 											        			
 										    },	
-    readFile:           function(filename)
-    {
-      console.log('file to be read in econ utils: ',filename);
-      var str = "";
-      
-      function readLines(input, func) {
-        var remaining = '';
-
-          remaining += input;
-          var index = remaining.indexOf('\n');
-          var last  = 0;
-          while (index > -1) {
-            var line = remaining.substring(last, index);
-            last = index + 1;
-            func(line);
-            index = remaining.indexOf('\n', last);
-            remaining = remaining.substring(last);
-          }
-
-          
-        return str;
-        socket.emit('test_driver', str);
-        
-      }
-      function func(data) {
-        //console.log('Line: ' + data);
-        str+=data+'\n';
-      }
-
-      var input = fs.readFileSync(filename);
-     return readLines(input, func);
-      
-      
-      
-    },	
-    readCRSP:           function(E,filename)
-    {
-      
-	    console.log("Reading CRSP....");
-	    console.log(filename);
-	    //var array = null;
-
-	   // s.send('econ_init', {fName: filename}, function(data){
-	      
-	      
-	      var x = this.readFile(filename)
-	      //console.log("WHAT YOU GET BACK: ",x);
-	     E = processData(E,x);
-
-	    //});	    
-	    
-	    
-	    
-	    
-	    
-//	    setInterval( function(){
-        
-      function processData(E, dataIn ){
-      
-          var firm = null;
-	        var fList;//ArrayList<Firm>
-	        var values;//String[]
-	        var sics = [];//new ArrayList<String>();
-	        var qtrs = [];//new ArrayList<Integer>();
-	    
-			    var array = splitRows(dataIn);
-			
-			    for(i in array) 
-			    {
-				    values=new String[23];
-				    values = str.split(',');
-				    firm =new Firm();					
-				    firm.gvkey=values[0];
-				    firm.datadate=values[1];
-				    firm.fyearq=values[2];
-				    firm.fqtr=values[3];
-				    firm.cusip=values[4];
-				    firm.cshpry=values[5];
-				    firm.txditcq=values[6];
-				    firm.sic=values[7];
-				    firm.deflator=values[8];
-				    firm.atq=values[9];
-				    firm.dlcq=values[10];
-				    firm.dlttq=values[11];
-				    firm.dpactq=values[12];
-				    firm.dpq=values[13];
-				    firm.oibdpq=values[14];
-				    firm.ppegtq=values[15];
-				    firm.prccq=values[16];
-				    firm.pstkq=values[17];
-				    firm.saleq=values[18];
-				    firm.Profitability=values[19];
-				    firm.Market_value_equity=values[20];
-				    firm.Equity_book_value=values[21];
-				    firm.Tobins_Q=values[22];	
-
-	  				//build firm tree
-    				if(E.firmTree.get(firm.cusip)==null)
-    				{
-    					fList = [];//new ArrayList<Firm>();
-    					fList.push(firm);
-    					E.firmTree.put(firm.cusip, fList);
-    				} 
-    				else
-    				{
-    					E.firmTree.get(firm.cusip).push(firm);
-    					E.firmTree.put(firm.cusip, E.firmTree.get(firm.cusip));
-    				}
-
-						// build quarter tree
-						if(E.quarterTree.get(qM2.get(dM2.get(firm.datadate))) == null)
-						{
-							fList = [];//new ArrayList<Firm>();
-							fList.push(firm);
-			    		E.quarterTree.put(qM2.get(dM2.get(firm.datadate)), fList);
-			    		qtrs.push(qtrmap.get(dM2.get(firm.datadate)));
-			    	} 
-			    	else 
-			    	{
-							E.quarterTree.get(qM2.get(dM2.get(firm.datadate))).push(firm);
-							E.quarterTree.put(qM2.get(dM2.get(firm.datadate)), E.quarterTree.get(qM2.get(dM2.get(firm.datadate))));
-						}	        	
-						// build sic tree
-						if(E.sicTree.get(firm.sic)==null)
-						{
-			    		fList = [];//new ArrayList<Firm>();
-			    		fList.push(firm);
-			    		E.sicTree.put(firm.sic, fList);
-			    		sics.push(firm.sic);
-			    	} 
-			    	else 
-			    	{
-			    		E.sicTree.get(firm.sic).push(firm);
-			    		E.sicTree.put(firm.sic, E.sicTree.get(firm.sic));
-			    	}
-
-			    	E.AllFirms.push(firm);	        	
-			    	if(E.AllFirms2.get(firm.cusip)!= null)
-			    	{
-			    		E.AllFirms2.get(firm.cusip).entries.push(firm);
-			    	}
-			    	else
-				    {
-			    		E.AllFirms2.put(firm.cusip, firm);
-			    	}
-			    }
-			    
-			    //print out all firms grouped by sic
-					for(var j = 0; j < sics.length; j++)
-					{    		
-			    	console.log("Firm entry for SIC " + sics.get(j) + ": "+ E.sicTree.get(sics.get(j)).get(0).cusip);
-			    }
-			    
-			    //print out all firms grouped by quarter
-			    for(var j = 0; j < qtrs.length; j++)
-			    {
-			    	console.log("Firm entry for QUARTER " + qtrs.get(j) + ": "+ E.quarterTree.get(qtrs.get(j)).get(0).cusip);
-					}
-					return E;
-					
-				}
-				
-	  return E;
-  },		
-    writeList: 					function(filename, text)
-					     					{
-					     						fs.appendFile(filename, text+"\r\n", function (err) {});						 
-										    },
+    readFile:           readFile,	
+    readCRSP:           readCRSP,		
+    writeList: 					writeList,
     mapMonth:						function(month)
 										    {
 											    var result = "";
@@ -384,7 +370,7 @@ exports.EconUtils = function(path)
     										},  										
     dateFound:					function(date)
 										    {
-											    if(dM2.get(date) != null)
+											    if(dateMap.get(date) != null)
 											    {			
 												    return (dM2.get(date));
 											    }

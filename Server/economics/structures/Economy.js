@@ -24,20 +24,19 @@ exports.Economy = function(utils)
 	var goingconcernCount = 0;
 	var bankruptCount = 0;	
 	var m; //Mapping
-	var dM; //BTree<String, Integer>
-	var qM; //BTree<Integer, Integer>
+	var dM; //= function(){ return }; //BTree<String, Integer>
+	var qM;// = function(){ return utils.getQuarterMap()}; //BTree<Integer, Integer>
 	var utilities = utils;
 	var socc;
 	
 	return {
 	
-		init:						function(path, socket)
+		init:						function(path)
 										{
-										  //socc = socket;
 											filePath = path;
-											//utilities = new EconUtils(filePath).init(socket);
-											dM = utils.dM2;
-											qM = utils.qM2;
+											
+											dM = utils.getDateMap();
+											qM = utils.getQuarterMap();
 											
 											AllFirms = []; //ArrayList<Firm>()
 											AllFirms2 = require('../tools/HashMap').HashMap(); //BTree<String,Firm>()
@@ -51,6 +50,30 @@ exports.Economy = function(utils)
 											BeforeTree = require('../tools/HashMap').HashMap(); //BTree<String,ArrayList<Firm>>()
 											DuringTree = require('../tools/HashMap').HashMap(); //BTree<String,ArrayList<Firm>>()
 											AfterTree = require('../tools/HashMap').HashMap(); //BTree<String,ArrayList<Firm>>()
+											cusipList = [];
+											return {
+											
+											  
+											  dM:dM,
+											  qM:qM,
+											  filePath:filePath,
+											  
+											  AllFirms: AllFirms,
+											  AllFirms2:AllFirms2,
+											  firmTree:firmTree,
+											  bankTree:bankTree,
+											  bankruptTree:bankruptTree,
+											  goingConcernTree:goingConcernTree,
+											  sicTree:sicTree,
+											  categoryTree:categoryTree,
+											  quarterTree:quarterTree,
+											  BeforeTree:BeforeTree,
+											  DuringTree:DuringTree,
+											  AfterTree:AfterTree,
+											  
+											  cusipList: cusipList,
+											};
+											
 										},
     AllFirms:       [],
 										
@@ -61,10 +84,9 @@ exports.Economy = function(utils)
 											var text="";
 											var v = []; //new String[26];		
 											var values = [];
-											var fileName = filename+"dateMap.txt";
-											
-											  
-										  //  socc.send('bk_init', {fName: filename}, function(data){
+											var fileName = filename+"brd_data_set2b.txt";
+
+										  var data = utilities.readFile(fileName);
 										      try
 											{
 									          var array = data.toString().split('\n');
@@ -126,17 +148,11 @@ exports.Economy = function(utils)
 								          console.log("Reading bankrupcy data: done!");
 								          
 								          console.log('current econ state: ',tree);
-								          return tree;
+								          
 								          } catch(er) {
 								            console.log('didnt emit: ',er);
 								          }
-								          
-									     // });	
-
-												
-											
-											
-	           					
+								      return tree;
 	           				},
 									
  /**
@@ -161,9 +177,9 @@ exports.Economy = function(utils)
 																for(var i = 0; i<cusips.length;i++)
 																{
 																	cusipTimeSeries = []; //new ArrayList<ArrayList<Firm>>();
-																	beforeList = BeforeTree.get(cusips.get(i));
-																	duringList = DuringTree.get(cusips.get(i));
-																	afterList  = AfterTree.get(cusips.get(i));
+																	beforeList = BeforeTree.get(cusips[i]);
+																	duringList = DuringTree.get(cusips[i]);
+																	afterList  = AfterTree.get(cusips[i]);
 																	
 																	utilities.printList(beforeList);
 																	utilities.printList(duringList);

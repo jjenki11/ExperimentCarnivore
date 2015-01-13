@@ -2,28 +2,28 @@
 
 var fs = require('fs');
 
-exports.ReadFile = function(path, ut)
+exports.ReadFile = function(path, utils)
 {
 	var text = "";
 	var ECONOMY = null;
+	
+	var ut = utils;
+	
+  var getEconomy = function(){
+	  return ECONOMY;
+	};
+   var setEconomy = function(ec){
+    ECONOMY = ec;
+  };
+	
 	return {
-	  getEconomy: function()
-								{
-									return ECONOMY;
-								},
-    setEconomy: function(ec)
-                {
-                  ECONOMY = ec;
-                },
-		init: 			function(socket)
-								{
-								  socket.on('test_driver', function(){
-								    console.log('Heard you in readfile');
-								  });
-									
+
+		init: 			function()
+								{									
 									try{
 									  var E = require('../structures/Economy').Economy(ut);
-								  E.init(ut.getFilePath());	
+									  console.log('did  it break here? line 25 of readfile');
+								  E = E.init(ut.getFilePath());	
 									console.log("First definition of file paths: ", ut.getFilePath(), E);
 									var bankrupcies = ut.getFilePath()+"brd_data_set2b.txt";
 									var bkCusipFile = ut.getFilePath()+"brd_cusips.txt";
@@ -35,12 +35,12 @@ exports.ReadFile = function(path, ut)
 									var bkEverFile = ut.getFilePath()+"results/bk_ever.txt";
 									var gcOutputFile = ut.getFilePath()+"results/gc_firms.txt";
 									var outputFileArray = [bkBeforeFile, bkDuringFile, bkAfterFile, bkEverFile,	gcOutputFile];
-									  ut.readCRSP(E, filename);		
+									E =  ut.readCRSP(E, filename);		
                     console.log('made it to line 39 in readfile');
 									  var bkList = ut.readList(bkCusipFile); //ArrayList<String>
 									  E.cusipList = bkList;
 								  	console.log("Reading bankrupcy data: done!");
-								  	E.doBankrupcy(bankrupcies);
+								  	E = E.doBankrupcy(bankrupcies);
 									
 									
 									  console.log("GC COUNT: "+E.goingconcernCount);
@@ -61,7 +61,7 @@ exports.ReadFile = function(path, ut)
 									  while(idx<E.AllFirms.length)
 									  {
 										  f = require('../structures/Firm').Firm();
-										  f = E.AllFirms.get(idx);
+										  f = E.AllFirms[idx];
 										  var perDone = (idx/E.AllFirms.length)*100;
 										  var xx = [];
 										  try 
@@ -87,9 +87,13 @@ exports.ReadFile = function(path, ut)
 
       							}
       							console.log("Done writing files!");			
-      							
-      							ECONOMY = E;
-      							return E;
+      							this.setEconomy(E);
+      							//ECONOMY = E;
+      							return {
+      							  E:E,
+      							  getEconomy:getEconomy,
+      							  setEconomy:setEconomy,
+      							};
     							} catch(e) {
 									  console.log("COULDNT READ LIST DUDE: ", e);
 									 

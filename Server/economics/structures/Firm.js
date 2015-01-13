@@ -5,6 +5,7 @@ exports.Firm = function()
 {
 	return {	
 		dateIndex: 0,
+		quarterIndex: 0,
 		category: "",
 		gvkey: "",
 		datadate: "",

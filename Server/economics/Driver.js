@@ -11,30 +11,43 @@ exports.Driver = function()
 	var timeBlock = 3; // what is this?
 	var dataPoints = 120; //what is this?
 	var firmTimeSeries; //ArrayList<ArrayList<ArrayList<Firm>>>
+	var utils;
 	
-	return {
-	
-		init:																	function(socket)
+	var writeQuarterlyIntervalDiff = function(valList, outFile1, outFile2, outFile3, outFile4, outFile5, outFile6, outFile7, outFile8, outFile9, outFile10, outFile11, outFile12)
 																					{
-																						socket.on('test_driver', function(data){
-																					      console.log('yay, ');
-																					    });
-																					  
+																						var vals = valList; //Object[] 
+																						var boundedBeforeBKVals = vals[0];//((ArrayList<boundedValue>) vals[0]);
+																						var boundedDuringBKVals = vals[1];//((ArrayList<boundedValue>) vals[1]);
+																						var boundedAfterBKVals = vals[2];//((ArrayList<boundedValue>) vals[2]);		
+																						var filePath = "OverallDataSet";
+																						var categories = ["cusip", "firmTqIntervalDiff", "firmProfIntervalDiff", "sicTqIntervalDiff", "sicProfIntervalDiff", "TimeBlock"];		
+																						var dataTypes  = ["STRING", "NUMERIC", "NUMERIC", "NUMERIC", "NUMERIC", "STRING"];
+																						var types = [];
+																						types.push(categories);
+																						types.push(dataTypes);
+																						utils.constructARFFFile(filePath, types);
+																						utils.writeToARFFFile(evaluateFirmSicQuery(/*(ArrayList<boundedValue>)*/ vals[0], outFile1, outFile2, outFile3, outFile4, "BEFORE"), filePath);
+																						utils.writeToARFFFile(evaluateFirmSicQuery(/*(ArrayList<boundedValue>)*/ vals[1], outFile5, outFile6, outFile7, outFile8, "DURING"), filePath);
+																						utils.writeToARFFFile(evaluateFirmSicQuery(/*(ArrayList<boundedValue>)*/ vals[2], outFile9, outFile10, outFile11, outFile12, "AFTER"), filePath);
+																					};
+																					
+  var init = function()
+																					{
 																					  try{
 																					    var path = "/home/jeff/Desktop/development/keystrokes/ExperimentCarnivore/Server/economics/data_set/";
 																					    utils = require('../economics/tools/EconUtils').EconUtils(path);
 																					    
 																					    //utils = new EconUtils(path);
 																					    //utils.init(sockz);
-																					    utils.init(socket);
+																					    utils = utils.init();
                                               
 																					    //setup elements
 																					    var f = require('../economics/tools/ReadFile').ReadFile(path, utils);
-																					    f.init(socket); //ReadFile
+																					    f = f.init(); //ReadFile
 																					    econo = f.getEconomy();
 																					    econo.createFirmTransitionObj(econo.cusipList);
 																					    console.log("HERE WE GO"); 
-																					    console.log(econo.cusipList);
+																					    //console.log(econo.cusipList);
 																					    var vals = doRoutine(econo); //Object[]
 																					  	var beforeTQDist = econo.getFilePath()+"results/beforeTQDist.txt"; 			//1
 																						  var beforeProfDist = econo.getFilePath()+"results/beforeProfDist.txt"; 		//2
@@ -66,12 +79,11 @@ exports.Driver = function()
 																					  } catch(e) {
 																					    console.log("Problem mon: ",e);
 																					  }
-																					  //socket.send('econ_init',{});
-																					  //define file paths
-
-																					
-
-																					},	
+																					};
+	
+	return {
+	
+		init:																	init,	
 		getFirmsInQuarterRangeWithSIC:				function(start, end, sic)
 																					{
 																						var firmsInQuarterRange = [];//new ArrayList<ArrayList<Firm>>();
@@ -186,17 +198,17 @@ exports.Driver = function()
 																						value.quarterSpan = (value.end - value.start);
 																						for(var i = 0; i < list.length;i++)
 																						{
-																							if( (utils.qM2.get(utils.dM2.get((list.get(i).datadate))) >= value.start) &&
-																									(utils.qM2.get(utils.dM2.get((list.get(i).datadate))) < value.mid))
+																							if( (utils.qM2.get(utils.dM2.get((list[i].datadate))) >= value.start) &&
+																									(utils.qM2.get(utils.dM2.get((list[i].datadate))) < value.mid))
 																							{				
-																								beforeTQAvg.push(Float.parseFloat(list.get(i).Tobins_Q));
-																								beforeProfAvg.push(Float.parseFloat(list.get(i).Profitability));
+																								beforeTQAvg.push(Float.parseFloat(list[i].Tobins_Q));
+																								beforeProfAvg.push(Float.parseFloat(list[i].Profitability));
 																							}
-																							else if( (utils.qM2.get(utils.dM2.get((list.get(i).datadate))) >= value.mid) &&
-																											 (utils.qM2.get(utils.dM2.get(list.get(i).datadate)) <= value.end))
+																							else if( (utils.qM2.get(utils.dM2.get((list[i].datadate))) >= value.mid) &&
+																											 (utils.qM2.get(utils.dM2.get(list[i].datadate)) <= value.end))
 																							{				
-																								afterTQAvg.push(Float.parseFloat(list.get(i).Tobins_Q));
-																								afterProfAvg.push(Float.parseFloat(list.get(i).Profitability));
+																								afterTQAvg.push(Float.parseFloat(list[i].Tobins_Q));
+																								afterProfAvg.push(Float.parseFloat(list[i].Profitability));
 																							}
 																						}
 																						var resultTQ = [];//new float[3];
@@ -237,9 +249,9 @@ exports.Driver = function()
 																						var cusips = econo.cusipList; //ArrayList<String>
 																						for(var i = 0;i<cusips.length;i++)
 																						{
-																							list1.push(checkNaNForBV(list1, eco.BeforeTree.get(cusips.get(i)), cusips.get(i)));
-																							list2.push(checkNaNForBV(list2,  eco.DuringTree.get(cusips.get(i)), cusips.get(i)));
-																							list3.push(checkNaNForBV(list3,  eco.AfterTree.get(cusips.get(i)), cusips.get(i)));			
+																							list1.push(checkNaNForBV(list1, eco.BeforeTree.get(cusips[i]), cusips[i]));
+																							list2.push(checkNaNForBV(list2,  eco.DuringTree.get(cusips[i]), cusips[i]));
+																							list3.push(checkNaNForBV(list3,  eco.AfterTree.get(cusips[i]), cusips[i]));			
 																						}
 																						boundedFirmsObject.push(list1); // list 1 is vals[0] -> before
 																						boundedFirmsObject.push(list2); // list 2 is vals[1] -> during
@@ -270,22 +282,6 @@ exports.Driver = function()
 																						return new boundedValue();
 																					},
 	// Sort of the main function
-		writeQuarterlyIntervalDiff:						function(valList, outFile1, outFile2, outFile3, outFile4, outFile5, outFile6, outFile7, outFile8, outFile9, outFile10, outFile11, outFile12)
-																					{
-																						var vals = valList; //Object[] 
-																						var boundedBeforeBKVals = vals[0];//((ArrayList<boundedValue>) vals[0]);
-																						var boundedDuringBKVals = vals[1];//((ArrayList<boundedValue>) vals[1]);
-																						var boundedAfterBKVals = vals[2];//((ArrayList<boundedValue>) vals[2]);		
-																						var filePath = "OverallDataSet";
-																						var categories = ["cusip", "firmTqIntervalDiff", "firmProfIntervalDiff", "sicTqIntervalDiff", "sicProfIntervalDiff", "TimeBlock"];		
-																						var dataTypes  = ["STRING", "NUMERIC", "NUMERIC", "NUMERIC", "NUMERIC", "STRING"];
-																						var types = [];
-																						types.push(categories);
-																						types.push(dataTypes);
-																						utils.constructARFFFile(filePath, types);
-																						utils.writeToARFFFile(evaluateFirmSicQuery(/*(ArrayList<boundedValue>)*/ vals[0], outFile1, outFile2, outFile3, outFile4, "BEFORE"), filePath);
-																						utils.writeToARFFFile(evaluateFirmSicQuery(/*(ArrayList<boundedValue>)*/ vals[1], outFile5, outFile6, outFile7, outFile8, "DURING"), filePath);
-																						utils.writeToARFFFile(evaluateFirmSicQuery(/*(ArrayList<boundedValue>)*/ vals[2], outFile9, outFile10, outFile11, outFile12, "AFTER"), filePath);
-																					}
+		writeQuarterlyIntervalDiff:						writeQuarterlyIntervalDiff
 	};
 };
