@@ -134,6 +134,38 @@ var imageTools = function (){
     
 	};
 */	
+
+  function returnPTestImageArray(imageArr, numImages, userImage, controlImage)
+  {
+  
+    //imageArr is all possible images
+    //numImages is desired size of test set
+    //userImage is the user's selected image
+    //controlImage is the user's selected image
+    
+    /*
+      the goal here: 
+        1) pick (numImages-1) random images out of imageArr, put into array with userImage appended at end
+        2) assign random numbers 0-numImages-1 to each image
+        3) sort image set
+        4) make new array Ptest
+        5) prepend controlImage to Ptest
+        6) for each image in set, append (a: imageSet[i] followed by b: controlImage) to Ptest
+        return Ptest        
+    */
+    
+    
+    var min = 0;
+    var max = imageArr.length;
+    var tmpImgArr = [];
+    
+    for(var i = 0; i < numImages; i++)
+    {
+      
+    }
+    
+    
+  }
 	
 	function setImage(canvas, url, w, h)
 	{

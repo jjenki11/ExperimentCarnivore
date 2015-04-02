@@ -269,8 +269,7 @@
                     timestamp: Date.now()
                   }); 	
                 }
-            	  tools.setImage(document.getElementById('imagery'), imageArray[x], 750, 750);            	     
-            	  //plugins.appendToHandle("#dialog", ["#imagery"], $('imagery'));	         
+            	  tools.setImage(document.getElementById('imagery'), imageArray[x], 750, 750);            	              
             	  
                 sock.send('sensor', {
                   source: 'image',
