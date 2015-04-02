@@ -7,22 +7,27 @@ var userHistory = function()
   var history = [];
   var diffs = [];
   
+  var testParams = {
+    images: 0,
+    personalImage: "images/scream.jpg",
+    interStimulus: 1000, //ms
+    intraStimulus: 1000, //ms
+    name: "billy",
+    age: 28,
+    gender: "male",
+    devices: ["keyboard", "mouse", "emotiv"],
+  };
+  
   function testColumns(data)
   {  
     //console.log('COLUMNS: ',math.getColumns(data));
-    var cols = math.getColumns(data);        
-    
+    var cols = math.getColumns(data);            
     var avgs = [];
     var stds = [];
-    var tols = [];
-    
-    var withinTol = [];
-    
+    var tols = [];    
+    var withinTol = [];    
     var tmpMean = 0;
     var tmpStd = 0;
-    
-    
-    
     for(var i = 0;i<cols.length;i++)
     {      
       tmpMean = math.average(cols[i]);
@@ -38,20 +43,9 @@ var userHistory = function()
           }, 
           value
         ));
-
-
-      
     }
-    
-    
     console.log(withinTol);
       withinTol=[];
-    
-    // 
-    
-    
-    
-    
   };
   
   function addToHistory(data)
@@ -92,6 +86,7 @@ var userHistory = function()
 	  init          : init,
 	  addToHistory  : addToHistory,
 	  getHistory    : getHistory,
+	  //setTestParams : setTestParams,
 	};
 
 };

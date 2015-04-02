@@ -64,6 +64,11 @@ var SensoryManager = function(sock, plug)
     */  
   };
 
+  function initDisplayHandler(handle)
+  {
+  
+  }
+
   function initMouseHandler(handle)
   {      
     var eventEnum = 
@@ -84,6 +89,7 @@ var SensoryManager = function(sock, plug)
     // release mouse
     $( handle ).mouseup(function(event) {
         var evtObj = new initEventObject('mouse', 'upClick', {x: event.pageX, y: event.pageY}, Date.now());
+        console.log(evtObj);
         emitter.send('sensor', evtObj);
         lastEvent = evtObj;
     });
@@ -91,6 +97,7 @@ var SensoryManager = function(sock, plug)
     // click mouse
     $( handle ).mousedown(function(event) {
         var evtObj = new initEventObject('mouse', 'downClick', {x: event.pageX, y: event.pageY}, Date.now());
+        console.log(evtObj);
         emitter.send('sensor', evtObj);
         lastEvent = evtObj;
     });               
@@ -162,16 +169,23 @@ var SensoryManager = function(sock, plug)
     var accels = [];
     
   };
+  
+  function mouseClick(data)
+  {
+    console.log("CLICKED ON IMAGE");
+  }
 
   function init(win)
   {         
     emitter.attachHandler('inter_key_times', interKey);
     emitter.attachHandler('intra_key_times', intraKey);
     emitter.attachHandler('mouse_acceleration', mouseAccel);
+    emitter.attachHandler('mouse_click', mouseClick);
     
     return {
       mouse    : initMouseHandler(win),
-      keyboard : initKeyboardHandler(win)
+      keyboard : initKeyboardHandler(win),
+      display  : initDisplayHandler(win)
     };
   };
 

@@ -336,12 +336,7 @@ var pluginHandler = function(){
 	  $("#centerContent").html("<div id=\"content\"><div class=\"demo-container\"><div id=\"placeholder\" class=\"demo-placeholder\"></div></div></div>");
 	  
 	  // parse data request into mgmt system 
-	  
-	  
-	  
-	  $.plot("#placeholder", [ data ] );
-	  
-	  
+	  $.plot("#placeholder", [ data ] );	  
 	};
 	
 	function hideByHandle(handle)

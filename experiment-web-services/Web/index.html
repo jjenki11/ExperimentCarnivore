@@ -53,8 +53,9 @@
     };
     
     //	To show a dialog
-    var showDialog = function(theDialog, methodName){
+    var showDialog = function(theDialog, methodName, size){
         var method = methodName || 'open';
+       // console.log('SIZE OF IMAGE: ',size.w, size.h);
         extendDialog($( "#dialog" ).dialog({
             		closeOnEscape:false,
             		title: "IMAGE DIALOG",
@@ -63,8 +64,8 @@
                			at: "left top",
                			of: $("#centerContent")//.parent(".ui-dialog")
            			},
-           			width:"auto",
-           			height:"auto"
+           			width:  (size!=null) ? size.w : "auto",
+           			height: (size!=null) ? size.h : "auto"
         		}));
         theDialog.dialog(method);        
     };    
@@ -105,6 +106,7 @@
       "#dragVideo", "#dragInvert", "#dragGrayscale",
       "#dragBinary", "#plotHistogram", "#dragKeystroke",
       "#dragEmotiv", "#dragEcon", "#dragMock", "#drag3d",
+      "#dragPTest",
       /* TBD */
 		]);
 		
@@ -129,7 +131,7 @@
 			}
 		});
 
-		plugins.createDroppable("#dropCenter", "#dragPlot, #dragEmotiv, #dragEcon, #dragMock", function (event, ui) {  
+		plugins.createDroppable("#dropCenter", "#dragPlot, #dragEmotiv, #dragPTest, #dragEcon, #dragMock", function (event, ui) {  
 		  if ($(ui.draggable).attr('id') === "dragPlot") 
   		{
   			$("#centerContent").html("<div id=\"content\"><div class=\"demo-container\"><div id=\"placeholder\" class=\"demo-placeholder\"></div></div></div>");
@@ -140,6 +142,15 @@
 			   startEmotiv();
   				console.log("emotiv connected, starting data");
 			}		 		
+      if ($(ui.draggable).attr('id') === "dragPTest")
+      {
+      
+        
+        console.log("Perception test started.");
+        // inter_stimulus, intra_stimulus, imageHandle
+        startPTest(2000, 1000, "images/cat.jpg");
+        
+      }
 			if ($(ui.draggable).attr('id') === "dragEcon")
 			{
 			  startEcon();
@@ -221,10 +232,12 @@
 		    sock.send('emotiv_sup', {a1: 'counter', a2: 'GYROX', a3: 'O1'});
 		  }, 200);
 		};		
-		
+
+
 		//set Toggle = true to log keyboard and mouse metrics to developer console, false to turn logging off
 		var Toggle = true;
-		var monitorMe = "#pass"; // this is the object to be monitored
+		//var monitorMe = "#pass"; // this is the object to be monitored
+		var monitorMe = "canvas#imagery";
 		var sensors = new SensoryManager(sock, plugins);	
 		var userHist = new userHistory();
 		userHist.init(sock, math);
@@ -232,6 +245,47 @@
 		if(Toggle){			
 		  sensors.init(monitorMe);
     }	else {  }
+    
+		
+		function startPTest(inter_stimulus, intra_stimulus, imageHandle){ 	
+		  	var imageArray = ["images/gray.png", "images/mazda_poo.png", "images/gray.png", "images/silv_merc.jpeg", "images/gray.png", "images/renault_clio.jpeg", "images/gray.png", "images/scream.jpg", "images/gray.png", imageHandle];
+		  	var type= "";
+		  	plugins.appendToHandle("#dialog", ["#imagery"], $('imagery'));	
+		  	showDialog($("#dialog"), 'open');
+		  	for(var i = 0; i < imageArray.length; i++)
+		  	{
+		  	// nice.. anonymous functions!
+		  	  setTimeout(
+		  	    function(x){
+		  	      return function(){
+		  	        if(imageArray[x] === "images/gray.png"){ type = "inter_stimulus"; }
+		  	        else if(imageArray[x] === imageHandle){ type = "user_selected"; }
+		  	        else{ type = "other_image" }
+		  	        if(x > 0){
+		    	        sock.send('sensor', {
+                    source: 'image',
+                    enumeration: type+"_hide",
+                    value: imageArray[x],
+                    timestamp: Date.now()
+                  }); 	
+                }
+            	  tools.setImage(document.getElementById('imagery'), imageArray[x], 750, 750);            	     
+            	  //plugins.appendToHandle("#dialog", ["#imagery"], $('imagery'));	         
+            	  
+                sock.send('sensor', {
+                  source: 'image',
+                  enumeration: type+"_show",
+                  value: imageArray[x],
+                  timestamp: Date.now()
+                }); 	
+                  
+		  	      }; 
+		  	    }(i), inter_stimulus*i // only have inter_stimulus time working atm
+		  	  );
+		  	}
+		};
+		
+
     
     
   
@@ -255,9 +309,9 @@
 
 	</script>
 </head>
-<body>
-<canvas id="imagery" width="512" height="512"></canvas>
-<canvas id="ThreeDWin" width="512" height="512"></canvas>
+<body>client
+<canvas id="imagery" width="750" height="750"></canvas>
+<canvas id="ThreeDWin" width="750" height="750"></canvas>
 <div class="ui-layout-center">
 	<ul id="column1" class="column">
 		<div id="dropCenter" style="margin: 0 1em; padding: 1.5em; text-align: center; border: 2px solid #666; background: #666;">
@@ -290,8 +344,9 @@
 	<div id="dragVideo" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Video</div>
 	<div id="dragOutput" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Output</div>
 	<div id="dragEmotiv" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Connect Emotiv</div>
-		<div id="dragMock" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Connect Mock</div>
-		<div id="dragEcon" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Process Econ</div>
+  <div id="dragPTest" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Perception Test</div>
+	<div id="dragMock" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Connect Mock</div>
+	<div id="dragEcon" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Process Econ</div>
 	<div id="dropDialog" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Drop Image here</div>
 	<div id="dropManipulate" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Drop ops</div>
 	<div id="dropCollector" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Drop Collecter</div>

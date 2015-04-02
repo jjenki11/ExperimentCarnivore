@@ -134,7 +134,7 @@
       var str = ArrayToCommaDelimString(rand);
       
       var chop = str.toString().replace(/,_/, '\r\n');    
-      WriteLine('/home/jeff/Desktop/mockDataFile.txt', chop);
+      WriteLine('/home/cua-telehealth/Desktop/mockDataFile.txt', chop);
       
       var splitData = newDataEvent(str);      
       addData(splitData);       
@@ -299,6 +299,9 @@
           updateMouseHistory(data);
           //socket.emit('show_event', JSON.stringify(mouseEventHistory)); // show mouse log history
           break;
+        case 'image':
+          updateDisplayHistory(data);
+          break;
         case 'mocked':
           updateMockHistory(data);
           break;
@@ -321,14 +324,25 @@
       if(data.enumeration === 'upClick') 
       {
         mouseEventHistory.click.up.push({time: data.timestamp});
+        WriteLine("/home/cua-telehealth/Desktop/mouseFile.txt", 
+          data.timestamp+","+data.source+","+data.enumeration+","+data.value.x+","+data.value.y+"\n");
       } else if(data.enumeration === 'downClick') 
       {
         mouseEventHistory.click.down.push({time: data.timestamp});
+        WriteLine("/home/cua-telehealth/Desktop/mouseFile.txt", 
+          data.timestamp+","+data.source+","+data.enumeration+","+data.value.x+","+data.value.y+"\n");
       } else 
       {
         mouseEventHistory.move.push({time: data.timestamp, pos: data.value});
+        WriteLine("/home/cua-telehealth/Desktop/mouseFile.txt", 
+          data.timestamp+","+data.source+","+data.enumeration+","+data.value.x+","+data.value.y+"\n");
       }
     };    
+    function updateDisplayHistory(data)
+    {
+      WriteLine("/home/cua-telehealth/Desktop/imageFile.txt", 
+          data.timestamp+","+data.source+","+data.enumeration+","+data.value+"\n");
+    };
     function emotivConnect()
     {      
     };    
@@ -337,7 +351,15 @@
   function WriteLine(file, data)
   {    
     fs.appendFile(file, data, function (err) {
-      console.log('No Such File.');    
+      if(err){
+        fs.writeFile(file, data, function (err) {
+
+          if (err) throw err;
+
+          console.log('It\'s saved! in same location.');
+
+        });
+      }
     });    
     return true;
   };
@@ -363,8 +385,6 @@
   var PORT = 30009;
   var idx = 0;
   var lastSample = Date.now();
-  
-  
 
 
   var EmotivServer = net.createServer(function(sock) 
@@ -375,7 +395,7 @@
         addData(splitData);        
         sock.write('"'+EEGStruct+'"');          
         var chop = splitData.toString().replace(/,_/, '\r\n');        
-        WriteLine('/home/jeff/Desktop/dataFile.txt', chop);    
+        WriteLine('/home/cua-telehealth/Desktop/dataFile.txt', chop);    
         gateObjectSize(threshTime);
       });
       

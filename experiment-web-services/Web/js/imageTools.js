@@ -3,6 +3,11 @@
 var imageTools = function (){	
 
 	var m = new mathPack();
+	
+	function scaleImage( filename )
+	{
+
+	}
 
   function set3DWindow(canvas)
   {
@@ -100,16 +105,48 @@ var imageTools = function (){
         canvas.style.border   = "1px solid";
         div.appendChild(canvas)
     };
+/*
+	function setImage(can, url)
+	{
+	  var canvas = can;
+    var ctx = canvas.getContext("2d");
 
-	function setImage(canvas, url)
+    var img = new Image();
+    img.src = url;
+    img.onload = function () {
+
+        canvas.height = canvas.width * (img.height / img.width);
+
+        /// step 1
+        var oc = document.createElement('imagery');
+        var octx = oc.getContext("2d");
+
+        oc.width = img.width * 0.5;
+        oc.height = img.height * 0.5;
+        octx.drawImage(img, 0, 0, oc.width, oc.height);
+
+        /// step 2
+        octx.drawImage(oc, 0, 0, oc.width * 0.5, oc.height * 0.5);
+
+        ctx.drawImage(oc, 0, 0, oc.width, oc.height,
+        0, 0, canvas.width, canvas.height);
+    }
+    
+	};
+*/	
+	
+	function setImage(canvas, url, w, h)
 	{
 		var context = canvas.getContext('2d');
+		canvas.height = (w!=null) ? w : 750;
+		canvas.width = (h!=null) ? h : 750;
 		base_image = new Image();
 		base_image.src = url;
 		base_image.onload = function(){
-			context.drawImage(base_image, 0, 0);
+			context.drawImage(base_image, 0, 0, (w!=null) ? w : 750, (h!=null) ? h : 750);
 		}
 	};
+
 // TBD
 	function setPixel(canvas, i, j, r, g, b)
 	{
@@ -296,6 +333,7 @@ var imageTools = function (){
     };
 	
 	return {
+	  scaleImage: scaleImage,
 		invert: invert,
 		setImage: setImage,
 		loadCanvas: loadCanvas,
