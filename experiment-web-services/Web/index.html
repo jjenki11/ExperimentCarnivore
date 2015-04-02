@@ -148,7 +148,8 @@
         
         console.log("Perception test started.");
         // inter_stimulus, intra_stimulus, imageHandle
-        startPTest(2000, 1000, "images/cat.jpg");
+        startPTest(1000, 1000, "images/cat.jpg");
+        
         
       }
 			if ($(ui.draggable).attr('id') === "dragEcon")
@@ -248,40 +249,70 @@
     
 		
 		function startPTest(inter_stimulus, intra_stimulus, imageHandle){ 	
-		  	var imageArray = ["images/gray.png", "images/mazda_poo.png", "images/gray.png", "images/silv_merc.jpeg", "images/gray.png", "images/renault_clio.jpeg", "images/gray.png", "images/scream.jpg", "images/gray.png", imageHandle];
+		  	var imagear = [
+		  	  "images/mazda_poo.png",
+		  	  "images/silv_merc.jpeg", 
+		  	  "images/renault_clio.jpeg", 
+		  	  "images/scream.jpg", 
+		  	  "images/panda-inverted.jpg",
+		  	  "images/panda.jpg",
+		  	  "images/sebago-shoe-boat-01.jpg",
+		  	  "images/transport-boat.jpeg",
+		  	  "images/weirdo-cruise.jpg",
+		  	  imageHandle
+		  	];
+		  	//returnPTestImageArray(imageArr, numImages, userImage, controlImage)
+		  	
+		  	imgear = tools.returnPTestImageArray(imagear, 7, imageHandle, "images/gray.png");
 		  	var type= "";
-		  	plugins.appendToHandle("#dialog", ["#imagery"], $('imagery'));	
+		  	var imageArray = plugins.appendToHandle("#dialog", ["#imagery"], $('imagery'));	
 		  	showDialog($("#dialog"), 'open');
-		  	for(var i = 0; i < imageArray.length; i++)
+		  	for(var i = 0; i < imgear.length; i++)
 		  	{
 		  	// nice.. anonymous functions!
 		  	  setTimeout(
 		  	    function(x){
 		  	      return function(){
-		  	        if(imageArray[x] === "images/gray.png"){ type = "inter_stimulus"; }
-		  	        else if(imageArray[x] === imageHandle){ type = "user_selected"; }
+		  	        if(imgear[x] === "images/gray.png"){ type = "inter_stimulus"; }
+		  	        else if(imgear[x] === imageHandle){ type = "user_selected"; }
 		  	        else{ type = "other_image" }
 		  	        if(x > 0){
 		    	        sock.send('sensor', {
                     source: 'image',
                     enumeration: type+"_hide",
-                    value: imageArray[x],
+                    value: imgear[x],
                     timestamp: Date.now()
                   }); 	
                 }
-            	  tools.setImage(document.getElementById('imagery'), imageArray[x], 750, 750);            	              
+            	  tools.setImage(document.getElementById('imagery'), imgear[x], 750, 750);            	              
             	  
                 sock.send('sensor', {
                   source: 'image',
                   enumeration: type+"_show",
-                  value: imageArray[x],
+                  value: imgear[x],
                   timestamp: Date.now()
                 }); 	
-                  
+                  if(x == imgear.length-1){
+if (confirm('Are you trying to go another round?')) {
+    // Save it!
+    startPTest(inter_stimulus, intra_stimulus, imageHandle);
+} else {
+    // Do nothing!
+    console.log('Goodbye!');
+    showDialog($("#dialog"), 'close');
+}
+                    
+                  }
 		  	      }; 
 		  	    }(i), inter_stimulus*i // only have inter_stimulus time working atm
 		  	  );
 		  	}
+		  	
+		  	function doitagain()
+		  	{
+		  	  startPTest(inter_stimulus, intra_stimulus, imageHandle);
+		  	}
+		  	
 		};
 		
 
