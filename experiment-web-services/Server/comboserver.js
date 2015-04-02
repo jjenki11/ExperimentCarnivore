@@ -308,14 +308,25 @@
       }
     });
     
+    
+    // 6W Mapping files
+    // 
+    // when: data.timestamp
+    // where: data.source
+    // what: data.value{list of attributes}
+    
     function updateKeyHistory(data)
     {
       if(data.enumeration === 'keyUp') 
       {
         keyEventHistory.up.push({time: data.timestamp, key: data.value.index});
+        WriteLine("/home/jeff/Desktop/development/keystrokes/ExperimentCarnivore/experiment-web-services/Data/keyFile.txt",
+          data.timestamp+","+data.source+","+data.enumeration+","+data.value.index+"\n");
       } else 
       {
         keyEventHistory.down.push({time: data.timestamp, key: data.value.index});
+        WriteLine("/home/jeff/Desktop/development/keystrokes/ExperimentCarnivore/experiment-web-services/Data/keyFile.txt",
+          data.timestamp+","+data.source+","+data.enumeration+","+data.value.index+"\n");
       }
     };
     
@@ -324,23 +335,23 @@
       if(data.enumeration === 'upClick') 
       {
         mouseEventHistory.click.up.push({time: data.timestamp});
-        WriteLine("/home/cua-telehealth/Desktop/mouseFile.txt", 
+        WriteLine("/home/jeff/Desktop/development/keystrokes/ExperimentCarnivore/experiment-web-services/Data/mouseFile.txt", 
           data.timestamp+","+data.source+","+data.enumeration+","+data.value.x+","+data.value.y+"\n");
       } else if(data.enumeration === 'downClick') 
       {
         mouseEventHistory.click.down.push({time: data.timestamp});
-        WriteLine("/home/cua-telehealth/Desktop/mouseFile.txt", 
+        WriteLine("/home/jeff/Desktop/development/keystrokes/ExperimentCarnivore/experiment-web-services/Data/mouseFile.txt", 
           data.timestamp+","+data.source+","+data.enumeration+","+data.value.x+","+data.value.y+"\n");
       } else 
       {
         mouseEventHistory.move.push({time: data.timestamp, pos: data.value});
-        WriteLine("/home/cua-telehealth/Desktop/mouseFile.txt", 
+        WriteLine("/home/jeff/Desktop/development/keystrokes/ExperimentCarnivore/experiment-web-services/Data/mouseFile.txt", 
           data.timestamp+","+data.source+","+data.enumeration+","+data.value.x+","+data.value.y+"\n");
       }
     };    
     function updateDisplayHistory(data)
     {
-      WriteLine("/home/cua-telehealth/Desktop/imageFile.txt", 
+      WriteLine("/home/jeff/Desktop/development/keystrokes/ExperimentCarnivore/experiment-web-services/Data/imageFile.txt", 
           data.timestamp+","+data.source+","+data.enumeration+","+data.value+"\n");
     };
     function emotivConnect()
@@ -353,11 +364,8 @@
     fs.appendFile(file, data, function (err) {
       if(err){
         fs.writeFile(file, data, function (err) {
-
           if (err) throw err;
-
           console.log('It\'s saved! in same location.');
-
         });
       }
     });    
@@ -394,8 +402,13 @@
         var splitData = newDataEvent(data);      
         addData(splitData);        
         sock.write('"'+EEGStruct+'"');          
-        var chop = splitData.toString().replace(/,_/, '\r\n');        
-        WriteLine('/home/cua-telehealth/Desktop/dataFile.txt', chop);    
+        var chop = splitData.toString().replace(/,_/, '\r\n');    
+        /*
+COUNTER,AF3,F7,F3, FC5, T7, P7, O1, O2,P8, T8, FC6, F4,F8, AF4,GYROX, GYROY, TIMESTAMP
+        */
+        WriteLine("/home/jeff/Desktop/development/keystrokes/ExperimentCarnivore/experiment-web-services/Data/eegFile.txt",
+          Date.now()+","+'eeg'+","+chop);    
+        //WriteLine('/home/cua-telehealth/Desktop/eegFile.txt', Date.now()+","+chop);    
         gateObjectSize(threshTime);
       });
       

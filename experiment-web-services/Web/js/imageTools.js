@@ -104,36 +104,7 @@ var imageTools = function (){
         canvas.style.position = "absolute";
         canvas.style.border   = "1px solid";
         div.appendChild(canvas)
-    };
-/*
-	function setImage(can, url)
-	{
-	  var canvas = can;
-    var ctx = canvas.getContext("2d");
-
-    var img = new Image();
-    img.src = url;
-    img.onload = function () {
-
-        canvas.height = canvas.width * (img.height / img.width);
-
-        /// step 1
-        var oc = document.createElement('imagery');
-        var octx = oc.getContext("2d");
-
-        oc.width = img.width * 0.5;
-        oc.height = img.height * 0.5;
-        octx.drawImage(img, 0, 0, oc.width, oc.height);
-
-        /// step 2
-        octx.drawImage(oc, 0, 0, oc.width * 0.5, oc.height * 0.5);
-
-        ctx.drawImage(oc, 0, 0, oc.width, oc.height,
-        0, 0, canvas.width, canvas.height);
-    }
-    
-	};
-*/	
+  };
 
   function returnPTestImageArray(imageArr, numImages, userImage, controlImage)
   {
@@ -141,7 +112,7 @@ var imageTools = function (){
     //imageArr is all possible images
     //numImages is desired size of test set
     //userImage is the user's selected image
-    //controlImage is the user's selected image
+    //controlImage is the neutral intra stimulus image (gray)
     
     /*
       the goal here: 
@@ -154,17 +125,50 @@ var imageTools = function (){
         return Ptest        
     */
     
+    function getRandomSubarray(arr, size) {
+        var shuffled = arr.slice(0), i = arr.length, min = i - size, temp, index;
+        while (i-- > min) {
+            index = Math.floor((i + 1) * Math.random());
+            temp = shuffled[index];
+            shuffled[index] = shuffled[i];
+            shuffled[i] = temp;
+        }
+        return shuffled.slice(min);
+    };
+    var createNumberLine = function(start, upperBound)
+    {
+      var len = upperBound - start;
+      var i = 0;
+      var numLine = [];
+      while(i<=len){
+        numLine.push(start+i);
+        i++;
+      }
+      return numLine;    
+    };
     
-    var min = 0;
-    var max = imageArr.length;
+    
+    var numset = getRandomSubarray(createNumberLine(0,numImages), numImages);
+    var tmp = [];
+    tmp.push(userImage);
+    for(var j = 0; j < numImages; j++)
+    {
+    
+      tmp.push(imageArr);
+    }
+//    imageArr = userImag.push(imageArr);
+    imageArr = tmp;
+//    imageArr.push(userImage);
     var tmpImgArr = [];
+    tmpImgArr.push(controlImage);
     
     for(var i = 0; i < numImages; i++)
     {
-      
+      tmpImgArr.push(tmp[numset[i]]);
+      tmpImgArr.push(controlImage);
     }
     
-    
+    return tmpImgArr;
   }
 	
 	function setImage(canvas, url, w, h)
@@ -366,6 +370,7 @@ var imageTools = function (){
 	
 	return {
 	  scaleImage: scaleImage,
+	  returnPTestImageArray: returnPTestImageArray,
 		invert: invert,
 		setImage: setImage,
 		loadCanvas: loadCanvas,

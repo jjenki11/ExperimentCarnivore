@@ -61,7 +61,7 @@ var SensoryManager = function(sock, plug)
         lastEvent = evtObj;
         emitter.send('sensor', evtObj);
     });  
-    */  
+    */
   };
 
   function initDisplayHandler(handle)
