@@ -154,12 +154,26 @@ var imageTools = function (){
     for(var j = 0; j < numImages; j++)
     {
     
-      tmp.push(imageArr);
+      tmp.push(imageArr[j]);
     }
 //    imageArr = userImag.push(imageArr);
     imageArr = tmp;
 //    imageArr.push(userImage);
     var tmpImgArr = [];
+    // 2 second gray image wait..
+    tmpImgArr.push(controlImage);
+    tmpImgArr.push(controlImage);
+    
+    // 3
+    tmpImgArr.push("images/3.png");
+    tmpImgArr.push(controlImage);
+    
+    // 2
+    tmpImgArr.push("images/2.png");
+    tmpImgArr.push(controlImage);
+    
+    // 1
+    tmpImgArr.push("images/1.png");
     tmpImgArr.push(controlImage);
     
     for(var i = 0; i < numImages; i++)
@@ -167,6 +181,10 @@ var imageTools = function (){
       tmpImgArr.push(tmp[numset[i]]);
       tmpImgArr.push(controlImage);
     }
+    
+    // 2 second gray image wait..
+    tmpImgArr.push(controlImage);
+    tmpImgArr.push(controlImage);
     
     return tmpImgArr;
   }
