@@ -238,10 +238,12 @@
 		//set Toggle = true to log keyboard and mouse metrics to developer console, false to turn logging off
 		var Toggle = true;
 		//var monitorMe = "#pass"; // this is the object to be monitored
-		var monitorMe = "canvas#imagery";
+		var monitorMe = "canvas#imagery, #pass";
 		var sensors = new SensoryManager(sock, plugins);	
 		var userHist = new userHistory();
 		userHist.init(sock, math);
+		
+		var trialCount = 0;
 		
 		if(Toggle){			
 		  sensors.init(monitorMe);
@@ -249,6 +251,7 @@
     
 		
 		function startPTest(inter_stimulus, intra_stimulus, imageHandle){ 	
+		  trialCount++;
 		  	var imagear = [
 		  	  "images/mazda_poo.png",
 		  	  "images/silv_merc.jpeg", 
@@ -267,6 +270,12 @@
 		  	var type= "";
 		  	var imageArray = plugins.appendToHandle("#dialog", ["#imagery"], $('imagery'));	
 		  	showDialog($("#dialog"), 'open');
+		  	sock.send('sensor', {
+                    source: 'experiment',
+                    enumeration: "start",
+                    value: "Trial_"+trialCount,
+                    timestamp: Date.now()
+                  }); 	
 		  	for(var i = 0; i < imgear.length; i++)
 		  	{
 		  	// nice.. anonymous functions!
@@ -295,6 +304,12 @@
                   if(x == imgear.length-1){
 if (confirm('Are you trying to go another round?')) {
     // Save it!
+    sock.send('sensor', {
+                    source: 'experiment',
+                    enumeration: "end",
+                    value: "Trial_"+trialCount,
+                    timestamp: Date.now()
+                  }); 
     startPTest(inter_stimulus, intra_stimulus, imageHandle);
 } else {
     // Do nothing!

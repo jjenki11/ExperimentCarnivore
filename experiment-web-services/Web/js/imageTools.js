@@ -156,9 +156,8 @@ var imageTools = function (){
     
       tmp.push(imageArr[j]);
     }
-//    imageArr = userImag.push(imageArr);
     imageArr = tmp;
-//    imageArr.push(userImage);
+    
     var tmpImgArr = [];
     // 2 second gray image wait..
     tmpImgArr.push(controlImage);
