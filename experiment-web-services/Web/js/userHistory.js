@@ -1,4 +1,4 @@
-var userHistory = function()
+var userHistory = function(selector)
 {
   var lastTols = [];
   var sock;
@@ -74,18 +74,38 @@ var userHistory = function()
 		}
   };
   
+  
+  function buildDialog(selector){
+    //$("#dialog").append("<div>SUP YO</div>");
+    /*
+    var x = $('<div></div>');
+    x.append("sup");
+    $(selector).append(x);
+    */
+    //return $(selector);
+    var x = $('<div></div>');
+    x.append("sup");
+    $(selector).append(x);
+    
+  };
+  
   function init(socket, mathPack)
 	{
 	  sock = socket;
 	  math = mathPack;
 	  sock.attachHandler('new_input', addToHistory);
 	  sock.attachHandler('user_history', getHistory);
+	  
+	  
+	  buildDialog();	  
+	  
 	};
 	
 	return { 
 	  init          : init,
 	  addToHistory  : addToHistory,
 	  getHistory    : getHistory,
+	  buildDialog   : buildDialog,
 	  //setTestParams : setTestParams,
 	};
 

@@ -36,6 +36,9 @@
     <script language="javascript" type="text/javascript" src="js/vendor/pre3djs/pre3d_shape_utils.js"></script>
     <script language="javascript" type="text/javascript" src="js/vendor/pre3djs/demos/colorscube.js"></script>
     <script language="javascript" type="text/javascript" src="js/vendor/pre3djs/demos/demo_utils.js"></script>
+    <script language="javascript" type="text/javascript" src="js/userProfile.js"></script>
+    <script language="javascript" type="text/javascript" src="js/signInDialog.js"></script>
+    
 	<script>
 	
 	var outerLayout;
@@ -53,9 +56,9 @@
     };
     
     //	To show a dialog
-    var showDialog = function(theDialog, methodName, size, atitle){
+    var showDialog = function(theDialog, methodName, size, abctitle){
         var method = methodName || 'open';
-        var ttl = atitle || 'Image Dialog';
+        var ttl = abctitle || 'Image Dialog';
        // console.log('SIZE OF IMAGE: ',size.w, size.h);
         extendDialog($( "#dialog" ).dialog({
             		closeOnEscape:false,
@@ -69,7 +72,15 @@
            			height: (size!=null) ? size.h : "auto"
         		}));
         theDialog.dialog(method);        
-    };    
+    };   
+    
+    function startRead(evt) {
+        var file = document.getElementById("file_dom").files[0];
+        if (file) {
+            //  getAsText(file);
+            alert("Name: " + file.name + "\n" + "Last Modified Date :" + file.lastModifiedDate);
+        }
+    }    
     
 	/*
 	*#######################
@@ -102,11 +113,11 @@
 		// Make all of our draggable items
 		
 		plugins.createDraggableItems([
-      "#dragPlot", "#dragImage", "#dragConsole",
+      /*"#dragPlot", "#dragImage", "#dragConsole",
       "#dragOutput", "#dragVarExpl", "#dragScripting", 
-      "#dragVideo", "#dragInvert", "#dragGrayscale",
-      "#dragBinary", "#plotHistogram", "#dragKeystroke",
-      "#dragEmotiv", "#dragEcon", "#dragMock", "#drag3d",
+      "#dragVideo", "#dragInvert", "#dragGrayscale",*/
+      /*"#dragBinary", "#plotHistogram",*/ "#dragKeystroke",
+      "#dragEmotiv", /*"#dragEcon",*/ "#dragMock", "#drag3d",
       "#dragPTest",
       /* TBD */
 		]);
@@ -140,6 +151,7 @@
 			}
 			if ($(ui.draggable).attr('id') === "dragEmotiv") 
 			{
+
 			   startEmotiv();
   				console.log("emotiv connected, starting data");
 			}		 		
@@ -228,12 +240,24 @@
 		
 		var sock = new nodeConnection();		
 		sock.init(plugins);
-		
-		function startEmotiv(){
-		  setInterval(function(){		  
-		    sock.send('emotiv_sup', {a1: 'counter', a2: 'GYROX', a3: 'O1'});
-		  }, 200);
+		/*
+		sock.attachHandler('emotiv_connected', function(data){
+		  console.log('data: ',data);  
+		  startEmotiv(true);
+		});
+		*/
+		function startEmotiv(bool){
+		  var x = bool || false;
+		  if(!x){ sock.send('emotiv_sup', {b: 'hasDongle'});}
+		  /*
+		  else{
+		    setInterval(function(){		  
+		      sock.send('emotiv_sup', {a1: 'counter', a2: 'GYROX', a3: 'O1'});
+		    }, 200);
+		  }*/
 		};		
+		
+		
 
 
 		//set Toggle = true to log keyboard and mouse metrics to developer console, false to turn logging off
@@ -371,8 +395,22 @@ if (confirm('Are you trying to go another round?')) {
     function startLogin(){
     
       
-      $('#userLogin').append('<p>SYOUSPOIUSD</p>');
-      showDialog('#dialog', ['#userLogIn'], {w: 800, h: 150}, "LOG IN!");
+      //var uPro = new userProfile("#dialog");
+      //$('#userLogIn').append('<p>SYOUSPOIUSD</p>');
+      
+      var sid = new signInDialog();
+      
+      sid.init("#userLogIn","#dialog");
+      
+      plugins.appendToHandle(
+    		  "#dialog", 
+    		  ["#userLogIn"], $('userLogIn')
+    	  );		
+    	  
+      userHist.buildDialog("#userLogIn");
+      
+      showDialog($("#dialog"), 'open', {w: 800, h: 850}, "LOGIN");
+      $("#dialog").dialog("option","title","LOGIN!!!!");
     }
     
     
@@ -385,8 +423,14 @@ if (confirm('Are you trying to go another round?')) {
 		};
 		
 		function startMock(){
-			startLogin();
-		  sock.send('mock_EEG_stream', {});
+		  if (window.File && window.FileReader && window.FileList && window.Blob) {
+        alert("File API supported.  You can attach your files thru the UI!"+startLogin());
+      } else {
+        alert("The File APIs are not fully supported in this browser.");
+      }
+			
+			
+		  //sock.send('mock_EEG_stream', {});
 		  
 		  console.log("MOCKED STREAM STARTED");
 		};
@@ -397,9 +441,9 @@ if (confirm('Are you trying to go another round?')) {
 
 	</script>
 </head>
-<body>client
+<body>
 <canvas id="imagery" width="750" height="750"></canvas>
-<div id="userLogIn"></div>
+<input type="file" id="file_dom" name="files[]" multiple onchange="startRead()"/>
 <canvas id="ThreeDWin" width="750" height="750"></canvas>
 <div class="ui-layout-center">
 	<ul id="column1" class="column">
@@ -423,22 +467,30 @@ if (confirm('Are you trying to go another round?')) {
 </div>
 <div class="ui-layout-north">
 	THIS IS WHERE THE ICONS WILL GO
+<!-- for now comment out.. add in incrementally -->
 	<div id="dragPlot" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Plot</div>
 	<div id="dragImage" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Image</div>
+<!--
 	<div id="drag3d" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">3D window</div>
 	<div id="dragConsole" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Console</div>
 	<div id="dragVarExpl" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Var Expl.</div>
 	<div id="dragScripting" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Scripting</div>
+-->
 	<div id="dragKeystroke" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Keystroke collecter</div>
+<!--
 	<div id="dragVideo" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Video</div>
 	<div id="dragOutput" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Output</div>
+-->
 	<div id="dragEmotiv" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Connect Emotiv</div>
   <div id="dragPTest" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Perception Test</div>
 	<div id="dragMock" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Connect Mock</div>
+<!--
 	<div id="dragEcon" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Process Econ</div>
+
 	<div id="dropDialog" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Drop Image here</div>
 	<div id="dropManipulate" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Drop ops</div>
 	<div id="dropCollector" style="width: 10ex; border: 2px solid #CCC; background: #009; padding: 10px;float: left;">Drop Collecter</div>
+-->
 </div>
 <div class="ui-layout-south">
 	<div id="dropSouth" style="margin: 0 1em; padding: 1.5em; text-align: center; border: 2px solid #666; background: #666;">	
@@ -456,5 +508,6 @@ if (confirm('Are you trying to go another round?')) {
 <div id="vars"></div>
 <div id="out"></div>
 <div id="clickMe"></div>
+<div id="userLogIn"></div>
 </body>
 </html>

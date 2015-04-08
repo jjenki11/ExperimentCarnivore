@@ -89,6 +89,24 @@ var nodeConnection = function()
 	  console.log('Showing Event:',data);
 	});
 	
+		socket.on('emotiv_connected', function(data){
+		  console.log('data: ',data);  
+		  startEmotiv(true);
+		});
+		
+		socket.on('emotiv_poll',function(data){
+		  
+		});
+		
+		function startEmotiv(bool){
+		  var x = bool || false;
+		  if(!x){ socket.emit('emotiv_sup', {b: 'hasDongle'});}
+		  
+		  else{
+		    
+		  }
+		};	
+	
 	socket.on('keyLog', function(data) {
 	  console.log('Logging Key:',data);
 	});
