@@ -53,12 +53,13 @@
     };
     
     //	To show a dialog
-    var showDialog = function(theDialog, methodName, size){
+    var showDialog = function(theDialog, methodName, size, atitle){
         var method = methodName || 'open';
+        var ttl = atitle || 'Image Dialog';
        // console.log('SIZE OF IMAGE: ',size.w, size.h);
         extendDialog($( "#dialog" ).dialog({
             		closeOnEscape:false,
-            		title: "IMAGE DIALOG",
+            		title: 'Image Dialog',
             		position: {
                			my: "left top",
                			at: "left top",
@@ -76,7 +77,7 @@
 	*#######################
 	*/
 	$(document).ready( function() {
-	
+
 	/*	This is the data that gets plotted by default...  */	
 		var d1 = [];
 		for (var i = 0; i < 14; i += 0.5) 
@@ -249,6 +250,42 @@
 		  sensors.init(monitorMe);
     }	else {  }
     
+    
+    function authenticateUser( ){
+    
+      var testParams = {
+        images: 0,
+        personalImage: "images/scream.jpg",
+        interStimulus: 1000, //ms
+        intraStimulus: 1000, //ms
+        name: "billy",
+        age: 28,
+        gender: "male",
+        devices: ["keyboard", "mouse", "emotiv"],
+      };
+      
+      var isUser = false;
+      
+      
+      
+    };
+    
+    function successEntry(data){    
+    
+      var personal="_";
+      var name="";
+      var birthday="";
+      var gender="";
+      var email="";
+      
+      var images=["","","",""];
+      
+      var verify = false;
+       
+    };
+    
+    
+    
 		
 		function startPTest(inter_stimulus, intra_stimulus, imageHandle){ 	
 		  trialCount++;
@@ -266,7 +303,7 @@
 		  	];
 		  	//returnPTestImageArray(imageArr, numImages, userImage, controlImage)
 		  	
-		  	imgear = tools.returnPTestImageArray(imagear, 7, imageHandle, "images/gray.png");
+		  	imgear = tools.returnPTestImageArray(imagear, 10, imageHandle, "images/gray.png");
 		  	var type= "";
 		  	var imageArray = plugins.appendToHandle("#dialog", ["#imagery"], $('imagery'));	
 		  	showDialog($("#dialog"), 'open');
@@ -331,6 +368,12 @@ if (confirm('Are you trying to go another round?')) {
 		};
 		
 
+    function startLogin(){
+    
+      
+      $('#userLogin').append('<p>SYOUSPOIUSD</p>');
+      showDialog('#dialog', ['#userLogIn'], {w: 800, h: 150}, "LOG IN!");
+    }
     
     
   
@@ -342,7 +385,7 @@ if (confirm('Are you trying to go another round?')) {
 		};
 		
 		function startMock(){
-		
+			startLogin();
 		  sock.send('mock_EEG_stream', {});
 		  
 		  console.log("MOCKED STREAM STARTED");
@@ -356,6 +399,7 @@ if (confirm('Are you trying to go another round?')) {
 </head>
 <body>client
 <canvas id="imagery" width="750" height="750"></canvas>
+<div id="userLogIn"></div>
 <canvas id="ThreeDWin" width="750" height="750"></canvas>
 <div class="ui-layout-center">
 	<ul id="column1" class="column">

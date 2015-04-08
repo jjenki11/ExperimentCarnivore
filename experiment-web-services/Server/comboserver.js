@@ -240,6 +240,8 @@ var EEG_Struct = function(){
   
   var EEGStruct = new EEG_Struct();
   
+
+  
   /* set this to where you're located (for now, 
      need to process.env for the path to Server and 
      find location from there, or get user to input path)
@@ -361,7 +363,7 @@ var EEG_Struct = function(){
     
     console.log('connection started');    
     socket.emit('success', 'Server heard your request.');     
-    
+        console.log(require('./DB.js').createDB());
     socket.on('disconnect', function(){
       console.log('finishing watch');
       console.log(watch);
